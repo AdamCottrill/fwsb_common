@@ -2,12 +2,23 @@ from django.db import models
 
 # Create your models here.
 
-
 #from django.contrib.gis.db import models
 from django.template.defaultfilters import slugify
 
 
-class Lake(models.Model):
+class BaseModel(models.Model):
+    '''A base model that will be used by all of our other models that
+incldues a date created and date modified timestamp.
+    '''
+    created_date = models.DateTimeField(auto_now_add=True)
+    modified_date = models.DateTimeField(auto_now=True)
+    obsolete = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+
+class Lake(BaseModel):
     """
     A lookup table for lakes.
 
@@ -15,6 +26,7 @@ class Lake(models.Model):
 
     abbrev = models.CharField(max_length=2, unique=True)
     lake_name = models.CharField(max_length=30, unique=True)
+
     #shoreline = models.MultiPolygonField(srid=4326, blank=True, null=True)
     #centroid = models.PointField(srid=4326)
 
@@ -36,7 +48,7 @@ class Lake(models.Model):
         return self.lake_name.replace('Lake ', '')
 
 
-class ManagementUnit(models.Model):
+class ManagementUnit(BaseModel):
     """
     a class to hold geometries associated with arbirary ManagementUnits
     that can be represented as polygons.  Examples include quota
@@ -103,7 +115,7 @@ class ManagementUnit(models.Model):
         super(ManagementUnit, self).save(*args, **kwargs)
 
 
-class Grid5(models.Model):
+class Grid5(BaseModel):
     """'
     A lookup table for 5-minute grids within lakes.
     """
@@ -129,7 +141,6 @@ class Grid5(models.Model):
 
         return slugify("_".join([lake, self.grid]))
 
-
     def save(self, *args, **kwargs):
         """
         Populate slug when we save the object.
@@ -139,7 +150,7 @@ class Grid5(models.Model):
         super(Grid5, self).save(*args, **kwargs)
 
 
-class Species(models.Model):
+class Species(BaseModel):
     """
     A lookup table for species.  Note that both backcross and splake
     are considered species and not lake trout strains.
