@@ -1,7 +1,5 @@
 from django.db import models
 
-# Create your models here.
-
 #from django.contrib.gis.db import models
 from django.template.defaultfilters import slugify
 
@@ -120,7 +118,7 @@ class Grid5(BaseModel):
     A lookup table for 5-minute grids within lakes.
     """
 
-    grid = models.CharField(max_length=4)
+    grid = models.IntegerField()
     slug = models.SlugField(blank=False, unique=True, editable=False)
     #centroid = models.PointField(srid=4326)
 
@@ -131,7 +129,7 @@ class Grid5(BaseModel):
 
     def __str__(self):
         """ String representation for a 5-minute grid."""
-        return "{} ({})".format(self.grid, self.lake.abbrev)
+        return "{:04d} ({})".format(self.grid, self.lake.abbrev)
 
     def get_slug(self):
         """
@@ -139,7 +137,7 @@ class Grid5(BaseModel):
         """
         lake = str(self.lake.abbrev)
 
-        return slugify("_".join([lake, self.grid]))
+        return slugify("{}_{:04d}".format(lake, self.grid))
 
     def save(self, *args, **kwargs):
         """
@@ -151,24 +149,38 @@ class Grid5(BaseModel):
 
 
 class Species(BaseModel):
-    """
-    A lookup table for species.  Note that both backcross and splake
-    are considered species and not lake trout strains.
+    """A lookup table for species.  Note that both backcross and splake
+    are considered species and not lake trout strains.  Field names
+    follow fishnet naming conventions
 
     """
 
-    abbrev = models.CharField(max_length=5, unique=True)
-    common_name = models.CharField(max_length=50, unique=True)
-    speciescommon = models.CharField(
-        max_length=50, unique=True, blank=True, null=True)
-    scientific_name = models.CharField(max_length=50, blank=True, null=True)
+    abbrev = models.CharField(
+        "US Abbreviation", max_length=5, blank=True, null=True)
+
+    spc_nm = models.CharField(
+        'Species Name', max_length=50, unique=True, blank=True, null=True)
+
+    spc_nmco = models.CharField(
+        'Official Common Name',
+        max_length=50,
+        unique=True,
+        blank=True,
+        null=True)
+
+    spc_nmsc = models.CharField(
+        'Scientific Name', max_length=50, blank=True, null=True)
     # family = models.CharField(max_length=50)
-    species_code = models.IntegerField(unique=True)
+    spc = models.IntegerField(unique=True)
+
+    spc_lab = models.CharField(max_length=10, unique=True)
+    spc_nmfam = models.CharField(max_length=50, blank=True, null=True)
+    comment = models.TextField(blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "Species"
-        ordering = ["abbrev"]
+        ordering = ["spc"]
 
     def __str__(self):
         """ String representation for a Species."""
-        return "{} ({})".format(self.common_name.title(), self.species_code)
+        return "{} ({:03d})".format(self.spc_nmco.title(), self.spc)

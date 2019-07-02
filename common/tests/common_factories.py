@@ -10,13 +10,15 @@ import factory
 #import common.models as common
 from ..models import Lake, ManagementUnit, Grid5, Species
 
+
 class LakeFactory(factory.DjangoModelFactory):
     """
     A factory for Lake objects.
     """
+
     class Meta:
         model = Lake
-        django_get_or_create = ('abbrev',)
+        django_get_or_create = ('abbrev', )
 
     abbrev = "HU"
     lake_name = "Huron"
@@ -56,9 +58,12 @@ class SpeciesFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Species
-        django_get_or_create = ('abbrev',)
+        django_get_or_create = ('abbrev', )
 
     abbrev = 'LAT'
-    common_name = 'Lake Trout'
-    scientific_name = 'Salvelinus namaycush'
-    species_code = 81
+    spc_nm = "Lake Trout"
+    spc_nmco = "Lake Trout"
+    spc_nmsc = 'Salvelinus namaycush'
+    spc = 81
+    spc_lab = "LaTro"
+    spc_nmfam = "SALMONINAE"

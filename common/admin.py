@@ -4,6 +4,7 @@ from .models import Lake, ManagementUnit, Species, Grid5
 
 admin.site.empty_value_display = '(None)'
 
+
 @admin.register(Lake)
 class LakeModelAdmin(admin.ModelAdmin):
     list_display = ('lake_name', 'abbrev')
@@ -12,12 +13,12 @@ class LakeModelAdmin(admin.ModelAdmin):
 @admin.register(ManagementUnit)
 class ManagementUnitModelAdmin(admin.ModelAdmin):
     list_display = ('label', 'lake', 'mu_type', 'description')
-    list_filter =  ('lake', 'mu_type')
+    list_filter = ('lake', 'mu_type')
 
 
 @admin.register(Species)
 class SpeciesModelAdmin(admin.ModelAdmin):
-    list_display = ('abbrev', 'common_name', 'scientific_name')
+    list_display = ('spc', 'spc_nmco', 'spc_nmsc', 'abbrev')
 
 
 @admin.register(Grid5)

@@ -6,12 +6,8 @@ species, ect.
 
 import pytest
 
-from .common_factories import (
-    LakeFactory,
-    ManagementUnitFactory,
-    Grid5Factory,
-    SpeciesFactory
-)
+from .common_factories import (LakeFactory, ManagementUnitFactory,
+                               Grid5Factory, SpeciesFactory)
 
 
 @pytest.mark.django_db
@@ -48,7 +44,8 @@ def test_management_unit_str():
     label = "A Management Unit"
 
     lake = LakeFactory(lake_name="Huron", abbrev="HU")
-    management_unit = ManagementUnitFactory(label=label, mu_type=mu_type, lake=lake)
+    management_unit = ManagementUnitFactory(
+        label=label, mu_type=mu_type, lake=lake)
     shouldbe = "{} {} {}".format(str(lake), mu_type.upper(), label)
     assert str(management_unit) == shouldbe
 
@@ -61,10 +58,10 @@ def test_grid5_str():
     """
 
     lake_abbrev = "HU"
-    grid_number = "1234"
+    grid_number = 123
     lake = LakeFactory(lake_name="Huron", abbrev=lake_abbrev)
     grid5 = Grid5Factory(grid=grid_number, lake=lake)
-    shouldbe = "{} ({})".format(grid_number, lake_abbrev)
+    shouldbe = "{:04d} ({})".format(grid_number, lake_abbrev)
     assert str(grid5) == shouldbe
 
 
@@ -74,14 +71,29 @@ def test_species_str():
     Verify that the string representation of a species object
     is the species name followed by the species abbreviation in brackets.
 
-    'Walleye (WAE)'
+    'Walleye (334)'
 
     """
 
-    abbrev = "WAE"
-    common_name = "Walleye"
-    species_code = 334
-    species = SpeciesFactory(common_name=common_name, abbrev=abbrev,
-                             species_code=species_code)
-    shouldbe = "{} ({})".format(common_name, species_code)
+    spc_nmco = "Walleye"
+    spc = 334
+    species = SpeciesFactory(spc_nmco=spc_nmco, spc=spc)
+    shouldbe = "{} ({})".format(spc_nmco, spc)
+    assert str(species) == shouldbe
+
+
+@pytest.mark.django_db
+def test_species_str_padded_spc():
+    """
+    Verify that the string representation of a species object
+    is the species name followed by the species abbreviation in brackets.
+
+    'Lake Trout (081)'
+
+    """
+
+    spc_nmco = "Lake Trout"
+    spc = 81
+    species = SpeciesFactory(spc_nmco=spc_nmco, spc=spc)
+    shouldbe = "{} ({:03d})".format(spc_nmco, spc)
     assert str(species) == shouldbe

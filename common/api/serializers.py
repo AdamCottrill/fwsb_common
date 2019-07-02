@@ -28,10 +28,8 @@ class ManagementUnitSerializer(serializers.ModelSerializer):
 class SpeciesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Species
-        fields = ('abbrev', 'common_name', 'scientific_name', 'species_code',
-                  'speciescommon')
-        lookup_field = 'abbrev'
-
+        fields = ('spc', 'abbrev', 'spc_nmco', 'spc_nmsc', 'spc_nmfam')
+        lookup_field = 'spc'
 
 class Grid5Serializer(serializers.ModelSerializer):
 
@@ -40,3 +38,4 @@ class Grid5Serializer(serializers.ModelSerializer):
     class Meta:
         model = Grid5
         fields = ('grid', 'lake', 'slug')
+        lookup_field = 'slug'
