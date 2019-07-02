@@ -1,0 +1,18 @@
+* UGLMU Common
+
+UGLMU Common is a Django application that provides a home for all of
+django models used by other UGLMU Django applications. It is build as
+an installable application.
+
+Currently, the application includes models, serializers and api
+endpoints for lakes, species, 5-minute grids, and management units.
+
+** Install UGLMU Common
+
+** Updating the Application
+
+*** Rebuilding the App.
+
+
+
+** Running the tests
