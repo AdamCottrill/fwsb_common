@@ -76,24 +76,7 @@ def test_species_str():
     """
 
     spc_nmco = "Walleye"
-    spc = 334
+    spc = "334"
     species = SpeciesFactory(spc_nmco=spc_nmco, spc=spc)
     shouldbe = "{} ({})".format(spc_nmco, spc)
-    assert str(species) == shouldbe
-
-
-@pytest.mark.django_db
-def test_species_str_padded_spc():
-    """
-    Verify that the string representation of a species object
-    is the species name followed by the species abbreviation in brackets.
-
-    'Lake Trout (081)'
-
-    """
-
-    spc_nmco = "Lake Trout"
-    spc = 81
-    species = SpeciesFactory(spc_nmco=spc_nmco, spc=spc)
-    shouldbe = "{} ({:03d})".format(spc_nmco, spc)
     assert str(species) == shouldbe

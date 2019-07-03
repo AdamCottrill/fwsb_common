@@ -12,8 +12,8 @@ from ..models import Species, Lake, ManagementUnit, Grid5
 class LakeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lake
-        fields = ('abbrev', 'lake_name')
-        lookup_field = 'abbrev'
+        fields = ("abbrev", "lake_name")
+        lookup_field = "abbrev"
 
 
 class ManagementUnitSerializer(serializers.ModelSerializer):
@@ -22,14 +22,16 @@ class ManagementUnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ManagementUnit
-        fields = ('label', 'lake', 'mu_type')
+        fields = ("label", "lake", "mu_type", "slug")
+        lookup_field = "slug"
 
 
 class SpeciesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Species
-        fields = ('spc', 'abbrev', 'spc_nmco', 'spc_nmsc', 'spc_nmfam')
-        lookup_field = 'spc'
+        fields = ("spc", "abbrev", "spc_nmco", "spc_nmsc", "spc_nmfam", "spc_lab")
+        lookup_field = "spc"
+
 
 class Grid5Serializer(serializers.ModelSerializer):
 
@@ -37,5 +39,5 @@ class Grid5Serializer(serializers.ModelSerializer):
 
     class Meta:
         model = Grid5
-        fields = ('grid', 'lake', 'slug')
-        lookup_field = 'slug'
+        fields = ("grid", "lake", "slug")
+        lookup_field = "slug"
