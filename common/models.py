@@ -1,4 +1,5 @@
-from django.db import models
+# from django.db import models
+from django.contrib.gis.db import models
 
 # from django.contrib.gis.db import models
 from django.template.defaultfilters import slugify
@@ -16,17 +17,39 @@ incldues a date created and date modified timestamp.
         abstract = True
 
 
+class LakeManager(models.Manager):
+    def get_by_natural_key(self, abbrev):
+        return self.get(abbrev=abbrev)
+
+
+class Grid5Manager(models.Manager):
+    def get_by_natural_key(self, lake, grid):
+        return self.get(lake__abbrev=lake, grid=grid)
+
+
+class SpeciesManager(models.Manager):
+    def get_by_natural_key(self, spc):
+        return self.get(spc=spc)
+
+
 class Lake(BaseModel):
     """
     A lookup table for lakes.
 
     """
 
-    abbrev = models.CharField(max_length=2, unique=True)
+    abbrev = models.CharField(max_length=2, unique=True, db_index=True)
     lake_name = models.CharField(max_length=30, unique=True)
+    geom = models.MultiPolygonField(srid=4326, blank=True, null=True)
+    geom_ontario = models.MultiPolygonField(srid=4326, blank=True, null=True)
 
-    # shoreline = models.MultiPolygonField(srid=4326, blank=True, null=True)
-    # centroid = models.PointField(srid=4326)
+    centroid = models.PointField(srid=4326, blank=True, null=True)
+    envelope = models.PolygonField(srid=4326, blank=True, null=True)
+
+    centroid_ontario = models.PointField(srid=4326, blank=True, null=True)
+    envelope_ontario = models.PolygonField(srid=4326, blank=True, null=True)
+
+    objects = LakeManager()
 
     class Meta:
         ordering = ["abbrev"]
@@ -34,6 +57,9 @@ class Lake(BaseModel):
     def __str__(self):
         """ String representation for a lake."""
         return "{} ({})".format(self.lake_name, self.abbrev)
+
+    def natural_key(self):
+        return (self.abbrev,)
 
     def short_name(self):
         """The name of the lake without 'Lake ..'.
@@ -45,18 +71,37 @@ class Lake(BaseModel):
         """
         return self.lake_name.replace("Lake ", "")
 
+    def save(self, *args, **kwargs):
+        """
+        Populate slug, centroid, and bounding box when we save the object.
+        """
+        # if not self.slug:
+
+        if self.geom:
+            self.centroid = self.geom.centroid
+            self.envelope = self.geom.envelope
+
+        if self.geom_ontario:
+            self.centroid_ontario = self.geom_ontario.centroid
+            self.envelope_ontario = self.geom_ontario.envelope
+
+        super(Lake, self).save(*args, **kwargs)
+
 
 class Grid5(BaseModel):
     """'
     A lookup table for 5-minute grids within lakes.
     """
 
-    grid = models.IntegerField()
-    slug = models.SlugField(blank=False, unique=True, editable=False)
-    # centroid = models.PointField(srid=4326)
-    # geom = models.MultiPolygonField(srid=4326)
-
     lake = models.ForeignKey(Lake, default=1, on_delete=models.CASCADE)
+
+    grid = models.CharField(db_index=True, max_length=4)
+    slug = models.SlugField(blank=False, unique=True, db_index=True, editable=False)
+    geom = models.MultiPolygonField(srid=4326, blank=True, null=True)
+    centroid = models.PointField(srid=4326, blank=True, null=True)
+    envelope = models.PolygonField(srid=4326, blank=True, null=True)
+
+    objects = Grid5Manager()
 
     class Meta:
         ordering = ["lake__abbrev", "grid"]
@@ -64,6 +109,9 @@ class Grid5(BaseModel):
     def __str__(self):
         """ String representation for a 5-minute grid."""
         return "{:04d} ({})".format(self.grid, self.lake.abbrev)
+
+    def natural_key(self):
+        return (self.lake__abbrev, self.grid)
 
     def get_slug(self):
         """
@@ -79,6 +127,11 @@ class Grid5(BaseModel):
         """
         # if not self.slug:
         self.slug = self.get_slug()
+
+        if self.geom:
+            self.centroid = self.geom.centroid
+            self.envelope = self.geom.envelope
+
         super(Grid5, self).save(*args, **kwargs)
 
 
@@ -92,12 +145,14 @@ class ManagementUnit(BaseModel):
 
     """
 
-    label = models.CharField(max_length=25)
-    slug = models.SlugField(blank=True, unique=True, editable=False)
-    description = models.CharField(max_length=300)
-    # geom = models.MultiPolygonField(srid=4326, blank=True, null=True)
-    # centroid = models.PointField(srid=4326)
     lake = models.ForeignKey(Lake, default=1, on_delete=models.CASCADE)
+
+    label = models.CharField(max_length=25, db_index=True)
+    slug = models.SlugField(blank=True, db_index=True, unique=True, editable=False)
+    description = models.CharField(max_length=300)
+    geom = models.MultiPolygonField(srid=4326, blank=True, null=True)
+    centroid = models.PointField(srid=4326, blank=True, null=True)
+    envelope = models.PolygonField(srid=4326, blank=True, null=True)
 
     primary = models.BooleanField(
         "Primary management unit type for this jurisdiciton.",
@@ -154,6 +209,11 @@ class ManagementUnit(BaseModel):
         Populate slug when we save the object.
         """
         # if not self.slug:
+
+        if self.geom:
+            self.centroid = self.geom.centroid
+            self.envelope = self.geom.envelope
+
         self.slug = self.get_slug()
         super(ManagementUnit, self).save(*args, **kwargs)
 
@@ -165,7 +225,7 @@ class Species(BaseModel):
 
     """
 
-    spc = models.CharField(max_length=3, unique=True)
+    spc = models.CharField(max_length=3, unique=True, db_index=True)
 
     abbrev = models.CharField("US Abbreviation", max_length=5, blank=True, null=True)
 
@@ -184,6 +244,8 @@ class Species(BaseModel):
     royalty_flag = models.BooleanField(default=False)
     quota_flag = models.BooleanField(default=False)
 
+    objects = SpeciesManager()
+
     class Meta:
         verbose_name_plural = "Species"
         ordering = ["spc"]
@@ -195,3 +257,6 @@ class Species(BaseModel):
             return "{} ({})".format(self.spc_nmco.title(), self.spc)
         else:
             return "{} ({})".format(self.spc_nmsc, self.spc)
+
+    def natural_key(self):
+        return (self.abbrev,)

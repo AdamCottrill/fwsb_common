@@ -10,8 +10,6 @@ an installable application.
 Currently, the application includes models, serializers and api
 endpoints for lakes, species, 5-minute grids, and management units.
 
-
-
 Detailed documentation is in the "docs" directory.
 
 Quick start
@@ -23,7 +21,7 @@ Quick start
 
     INSTALLED_APPS = [
         ...
-        'rest_framework'
+        'rest_framework',
         'common',
     ]
 
@@ -31,12 +29,35 @@ Quick start
 
     path('common/', include('common.urls')),
 
-3. Run `python manage.py migrate` to create the common models.
+3. Add the path to the GEOS and GDAL libraries required by geodjango
+   to your settings file:
 
-4. Visit http://127.0.0.1:8000/api/v1/common
+   GEOS_LIBRARY_PATH = "c:/OSGeo4W/bin/geos_c.dll"
+   GDAL_LIBRARY_PATH = "C:/OSGeo4W/bin/gdal204.dll"
+    
+4. Run `python manage.py migrate` to create the common models.
+   
+5. Visit http://127.0.0.1:8000/api/v1/common
 
 
 
+Associated Resources
+--------------------
+
+There are some additional python and sql scripts in the utils
+directory that can be used to populate the database.  The sql files
+update the geometry fields for each lake, while the python script
+updates species, grid5, and management units from the uglmu lookup
+tables. Other data sources could be added in the future if needed.
+
+As an alternative to the python and sql scripts which can be run from psql, there
+is a common.json fixture that was created using
+
+django-admin dumpdata common --natural-primary --output=utils/common.json
+
+and can be loaded to the database using:
+
+django-admin loaddata common.json
 
 
 

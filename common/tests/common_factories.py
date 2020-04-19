@@ -5,9 +5,10 @@ species, ect.
 """
 
 import factory
+
 # from django.contrib.gis.geos import GEOSGeometry
 
-#import common.models as common
+# import common.models as common
 from ..models import Lake, ManagementUnit, Grid5, Species
 
 
@@ -18,7 +19,7 @@ class LakeFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Lake
-        django_get_or_create = ('abbrev', )
+        django_get_or_create = ("abbrev",)
 
     abbrev = "HU"
     lake_name = "Huron"
@@ -32,10 +33,10 @@ class ManagementUnitFactory(factory.DjangoModelFactory):
     class Meta:
         model = ManagementUnit
 
-    label = 'QMA 4-5'
-    description = 'A management unit in Lake Huron'
+    label = "QMA 4-5"
+    description = "A management unit in Lake Huron"
     lake = factory.SubFactory(LakeFactory)
-    mu_type = 'qma'
+    mu_type = "qma"
 
 
 class Grid5Factory(factory.DjangoModelFactory):
@@ -46,8 +47,8 @@ class Grid5Factory(factory.DjangoModelFactory):
     class Meta:
         model = Grid5
 
-    grid = '1234'
-    #centroid = GEOSGeometry('POINT(-81.0 45.0)', srid=4326)
+    grid = 1234
+    # centroid = GEOSGeometry('POINT(-81.0 45.0)', srid=4326)
     lake = factory.SubFactory(LakeFactory)
 
 
@@ -58,12 +59,12 @@ class SpeciesFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Species
-        django_get_or_create = ('abbrev', )
+        django_get_or_create = ("abbrev",)
 
-    abbrev = 'LAT'
+    abbrev = "LAT"
     spc_nm = "Lake Trout"
     spc_nmco = "Lake Trout"
-    spc_nmsc = 'Salvelinus namaycush'
+    spc_nmsc = "Salvelinus namaycush"
     spc = 81
     spc_lab = "LaTro"
     spc_nmfam = "SALMONINAE"
