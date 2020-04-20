@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from ..models import Species, Lake, ManagementUnit, Grid5
 
-from .filters import Grid5Filter, ManagementUnitFilter
+from .filters import Grid5Filter, ManagementUnitFilter, LakeFilter
 from .utils import parse_point
 
 from .serializers import (
@@ -20,7 +20,6 @@ from .serializers import (
     LakeSerializer,
     LakeDetailSerializer,
     ManagementUnitSerializer,
-    ManagementUnitDetailSerializer,
     Grid5Serializer,
     Grid5DetailSerializer,
 )
@@ -30,6 +29,7 @@ class LakeListView(generics.ListAPIView):
 
     queryset = Lake.objects.all()
     serializer_class = LakeSerializer
+    filterset_class = LakeFilter
 
 
 class LakeDetailView(generics.RetrieveAPIView):
@@ -49,7 +49,7 @@ class ManagementUnitListView(generics.ListAPIView):
 class ManagementUnitDetailView(generics.RetrieveAPIView):
 
     queryset = ManagementUnit.objects.all()
-    serializer_class = ManagementUnitDetailSerializer
+    serializer_class = ManagementUnitSerializer
     lookup_field = "slug"
 
 

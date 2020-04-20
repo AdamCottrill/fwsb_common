@@ -57,16 +57,6 @@ class ManagementUnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ManagementUnit
-        fields = ("label", "lake", "mu_type", "slug")
-        lookup_field = "slug"
-
-
-class ManagementUnitDetailSerializer(serializers.ModelSerializer):
-
-    lake = LakeSerializer()
-
-    class Meta:
-        model = ManagementUnit
         fields = ("label", "lake", "mu_type", "slug", "centroid", "envelope")
         lookup_field = "slug"
 

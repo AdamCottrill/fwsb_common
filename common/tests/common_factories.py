@@ -59,12 +59,12 @@ class SpeciesFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Species
-        django_get_or_create = ("abbrev",)
+        django_get_or_create = ("spc",)
 
     abbrev = "LAT"
     spc_nm = "Lake Trout"
     spc_nmco = "Lake Trout"
     spc_nmsc = "Salvelinus namaycush"
-    spc = 81
+    spc = "081"
     spc_lab = "LaTro"
     spc_nmfam = "SALMONINAE"

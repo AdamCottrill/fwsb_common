@@ -106,9 +106,20 @@ class Grid5(BaseModel):
     class Meta:
         ordering = ["lake__abbrev", "grid"]
 
+    def left_pad_grid(self):
+        """
+        """
+        try:
+            grid = "{:04d}".format(int(self.grid))
+        except:
+            grid = self.grid
+        return grid
+
     def __str__(self):
         """ String representation for a 5-minute grid."""
-        return "{:04d} ({})".format(self.grid, self.lake.abbrev)
+
+        grid = self.left_pad_grid()
+        return "{} ({})".format(grid, self.lake.abbrev)
 
     def natural_key(self):
         return (self.lake__abbrev, self.grid)
@@ -118,8 +129,8 @@ class Grid5(BaseModel):
         the name is a concatenation of lake abbreviation, and the grid number.
         """
         lake = str(self.lake.abbrev)
-
-        return slugify("{}_{:04d}".format(lake, self.grid))
+        grid = self.left_pad_grid()
+        return slugify("{}_{}".format(lake, grid))
 
     def save(self, *args, **kwargs):
         """

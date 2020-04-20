@@ -18,30 +18,38 @@ import django_settings
 
 from common.models import Lake, Species, Grid5, ManagementUnit
 
-MDB = "C:\\1work\\Data_Warehouse\\LookupTables.mdb"
+MDB = "C:\\1work\\Data_Warehouse\\LookupTables.accdb"
 
 
 # ====================================
 #             LAKES
 
-huron = Lake(lake_name="Lake Huron", abbrev="HU")
-superior = Lake(lake_name="Lake Superior", abbrev="SU")
+lakes = [
+    ("Lake Huron", "HU"),
+    ("Lake Superior", "SU"),
+    ("Lake Erie", "ER"),
+    ("Lake Ontario", "ON"),
+    ("Lake St. Clare", "SC"),
+]
 
-huron.save()
-superior.save()
+items = []
+for lake in lakes:
+    items.append(Lake(lake_name=lake[0], abbrev=lake[1]))
+Lake.objects.bulk_create(items)
+
 
 print("Done adding lakes.")
 
 # ====================================
 #             SPECIES
 
-conString = "DRIVER={{Microsoft Access Driver (*.mdb)}};DBQ={}"
+conString = "DRIVER={{Microsoft Access Driver (*.mdb, *.accdb)}};DBQ={}"
 # connect using pyodbc
 conn = pyodbc.connect(conString.format(MDB))
 cursor = conn.cursor()
 
 sql = """select SPC, SPC_LAB, SPC_NM, SPC_NMCO, SPC_NMSC, SPC_NMFAM,
-COMMENT from [SPC] order by [SPC]"""
+COMMENT from [SPC] where [SPC_LAB] is not null order by [SPC]"""
 
 cursor.execute(sql)
 
@@ -65,6 +73,7 @@ print("Done adding Species.")
 # NOTE: Someday, these should be read in from a shapefile so that we
 # can capture their geometries.
 
+huron = Lake.objects.get(abbrev="HU")
 # HURON GRIDS
 
 sql = """select GRID from [Grid_Lookup]"""
@@ -74,7 +83,6 @@ cursor.execute(sql)
 colnames = [x[0].lower() for x in cursor.description]
 
 rs = cursor.fetchall()
-
 
 items = []
 for row in rs:

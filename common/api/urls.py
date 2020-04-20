@@ -31,14 +31,22 @@ router = SimpleRouter()
 urlpatterns = router.urls
 
 urlpatterns += [
-    path("lakes/", LakeListView.as_view()),
-    path("lake/<str:abbrev>", LakeDetailView.as_view()),
-    path("management_units/", ManagementUnitListView.as_view()),
-    path("management_unit/<slug:slug>", ManagementUnitDetailView.as_view()),
-    path("grid5s/", Grid5ListView.as_view()),
-    path("grid5/<slug:slug>", Grid5DetailView.as_view()),
-    path("species/", SpeciesListView.as_view()),
-    path("species/<str:spc>", SpeciesDetailView.as_view()),
+    path("lakes/", LakeListView.as_view(), name="lake-list"),
+    path("lake/<str:abbrev>", LakeDetailView.as_view(), name="lake-detail"),
+    path(
+        "management_units/",
+        ManagementUnitListView.as_view(),
+        name="management_unit-list",
+    ),
+    path(
+        "management_unit/<slug:slug>",
+        ManagementUnitDetailView.as_view(),
+        name="management_unit-detail",
+    ),
+    path("grid5s/", Grid5ListView.as_view(), name="grid5-list"),
+    path("grid5/<slug:slug>", Grid5DetailView.as_view(), name="grid5-detail"),
+    path("species/", SpeciesListView.as_view(), name="species-list"),
+    path("species/<str:spc>", SpeciesDetailView.as_view(), name="species-detail"),
     path("spatial_lookup/lake/", get_lake_from_pt, name="api-lookup-lake-from-pt"),
     path(
         "spatial_lookup/management_unit/",

@@ -6,8 +6,12 @@ species, ect.
 
 import pytest
 
-from .common_factories import (LakeFactory, ManagementUnitFactory,
-                               Grid5Factory, SpeciesFactory)
+from .common_factories import (
+    LakeFactory,
+    ManagementUnitFactory,
+    Grid5Factory,
+    SpeciesFactory,
+)
 
 
 @pytest.mark.django_db
@@ -44,8 +48,7 @@ def test_management_unit_str():
     label = "A Management Unit"
 
     lake = LakeFactory(lake_name="Huron", abbrev="HU")
-    management_unit = ManagementUnitFactory(
-        label=label, mu_type=mu_type, lake=lake)
+    management_unit = ManagementUnitFactory(label=label, mu_type=mu_type, lake=lake)
     shouldbe = "{} {} {}".format(str(lake), mu_type.upper(), label)
     assert str(management_unit) == shouldbe
 

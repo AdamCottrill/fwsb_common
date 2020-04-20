@@ -17,22 +17,22 @@ records.
 import django_filters
 from django_filters import rest_framework as filters
 
-from ..models import Grid5, ManagementUnit
+from ..models import Grid5, ManagementUnit, Lake
 
 
 class ValueInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
     pass
 
 
-class Grid5Filter(filters.FilterSet):
-    """Grid5 objects.  We want to be able to filter them
+class LakeFilter(filters.FilterSet):
+    """Lake objects.  We want to be able to filter them
     by lake abbreviation (e.g. ?lake=HU)"""
 
-    lake = ValueInFilter(field_name="lake__abbrev", lookup_expr="in")
+    lake = ValueInFilter(field_name="abbrev", lookup_expr="in")
 
     class Meta:
-        model = Grid5
-        fields = ["lake"]
+        model = Lake
+        fields = ["abbrev"]
 
 
 class ManagementUnitFilter(filters.FilterSet):
@@ -45,3 +45,14 @@ class ManagementUnitFilter(filters.FilterSet):
     class Meta:
         model = ManagementUnit
         fields = ["lake", "mu_type"]
+
+
+class Grid5Filter(filters.FilterSet):
+    """Grid5 objects.  We want to be able to filter them
+    by lake abbreviation (e.g. ?lake=HU)"""
+
+    lake = ValueInFilter(field_name="lake__abbrev", lookup_expr="in")
+
+    class Meta:
+        model = Grid5
+        fields = ["lake"]
