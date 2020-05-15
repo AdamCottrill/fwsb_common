@@ -9,14 +9,14 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name="fwsb-common",
-    version="0.2",
+    version="0.2.2",
     packages=find_packages(),
     include_package_data=True,
     license="MIT License",  # example license
     description="A django application for OMNRF FWSB lookup tables.",
     long_description=README,
     url="https://github.com/AdamCottrill",
-    author="Your Name",
+    author="Adam Cottrill",
     author_email="racottrill@gmail.com",
     classifiers=[
         "Environment :: Web Environment",

@@ -25,6 +25,14 @@ Quick start
         'common',
     ]
 
+
+   and configure the rest framework to use django_filter backend::
+
+    REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",)
+    }
+
+    
 2. Include the common URLconf in your project urls.py like this::
 
     path('common/', include('common.urls')),

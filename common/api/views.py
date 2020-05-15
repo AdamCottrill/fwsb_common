@@ -204,11 +204,6 @@ def get_grid5_from_pt(request):
     containing the point, or an empty dictionary if the dat is not geojson
     or falls outside of any grid5.
 
-    TODO: Add polygon field for grid5 objects so that we can find out
-    which grid the point falls in. This function finds the closest
-    centroid which is slower and likely to have lots of failing edge
-    cases.
-
     post request should be of the form:
 
     {"point": "POINT(-81.5 44.5)"}
