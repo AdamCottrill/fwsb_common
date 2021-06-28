@@ -4,6 +4,7 @@ htmlcov/*
 .coverage
 .flake8
 SC.json
+utils/common.json
 common/tests/api/htmlcov/
 dist/
 fwsb_common.egg-info/

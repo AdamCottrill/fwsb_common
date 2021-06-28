@@ -66,8 +66,8 @@ print("Done!")
 pars = {
     "PG_HOST": "localhost",
     "PG_DBASE": "glbdjango",
-    "PG_PASS": os.getenv("PG_PASS", "django123"),
-    "PG_USER": os.getenv("PG_USER", "cottrillad"),
+    "PG_PASS": os.getenv("PG_PASS"),
+    "PG_USER": os.getenv("PG_USER"),
 }
 
 

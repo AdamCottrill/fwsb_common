@@ -32,8 +32,8 @@ SHP_SRC = (
 con_pars = {
     "HOST": "localhost",
     "NAME": "fsdviz",
-    "USER": "cottrillad",
-    "PASSWORD": os.getenv("PGPASS", "password"),
+    "USER": os.getenv("PGUSER"),
+    "PASSWORD": os.getenv("PGPASS"),
 }
 
 pg_constring = """host='{HOST}' dbname='{NAME}' user='{USER}'
