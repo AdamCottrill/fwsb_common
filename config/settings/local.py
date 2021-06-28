@@ -2,8 +2,9 @@ from config.settings.base import *
 
 
 GEOS_LIBRARY_PATH = "c:/OSGeo4W/bin/geos_c.dll"
-GDAL_LIBRARY_PATH = "C:/OSGeo4W/bin/gdal204.dll"
+GDAL_LIBRARY_PATH = "C:/OSGeo4W/bin/gdal300.dll"
 
+SECRET_KEY = get_env_variable("SECRET_KEY")
 
 DATABASES = {
     "default": {
@@ -23,17 +24,3 @@ INTERNAL_IPS = [
     "127.0.0.1",
     # ...
 ]
-
-
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
-
-# DB_PATH = os.path.join(BASE_DIR, 'db/common.db')
-#
-# DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': DB_PATH
-#    }
-# }

@@ -5,3 +5,4 @@ pytest-cov==2.7.1
 pytest-django==3.5.1
 pyodbc==4.0.26
 django-debug-toolbar==2.2
+pyshp==2.1.0

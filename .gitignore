@@ -1,3 +1,13 @@
 *.pyc
 db/*
 htmlcov/*
+.coverage
+.flake8
+SC.json
+common/tests/api/htmlcov/
+dist/
+fwsb_common.egg-info/
+reset_db.bat
+utils/geojson/*
+utils/lake_sql/*
+utils/sandbox.py
