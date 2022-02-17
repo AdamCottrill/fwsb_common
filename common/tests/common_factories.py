@@ -12,7 +12,7 @@ import factory
 from ..models import Lake, ManagementUnit, Grid5, Species
 
 
-class LakeFactory(factory.DjangoModelFactory):
+class LakeFactory(factory.django.DjangoModelFactory):
     """
     A factory for Lake objects.
     """
@@ -25,7 +25,7 @@ class LakeFactory(factory.DjangoModelFactory):
     lake_name = "Huron"
 
 
-class ManagementUnitFactory(factory.DjangoModelFactory):
+class ManagementUnitFactory(factory.django.DjangoModelFactory):
     """
     A factory for ManagementUnit objects.
     """
@@ -39,7 +39,7 @@ class ManagementUnitFactory(factory.DjangoModelFactory):
     mu_type = "qma"
 
 
-class Grid5Factory(factory.DjangoModelFactory):
+class Grid5Factory(factory.django.DjangoModelFactory):
     """
     A factory for 5-minute grid objects.
     """
@@ -52,7 +52,7 @@ class Grid5Factory(factory.DjangoModelFactory):
     lake = factory.SubFactory(LakeFactory)
 
 
-class SpeciesFactory(factory.DjangoModelFactory):
+class SpeciesFactory(factory.django.DjangoModelFactory):
     """
     A factory for Species objects.
     """
