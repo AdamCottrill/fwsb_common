@@ -17,7 +17,7 @@ records.
 import django_filters
 from django_filters import rest_framework as filters
 
-from ..models import Grid5, ManagementUnit, Lake
+from ..models import Grid5, ManagementUnit, Lake, Species
 
 
 class ValueInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
@@ -56,3 +56,29 @@ class Grid5Filter(filters.FilterSet):
     class Meta:
         model = Grid5
         fields = ["lake"]
+
+
+class SpeciesFilter(django_filters.FilterSet):
+
+    spc = ValueInFilter(field_name="spc")
+    spc__not = ValueInFilter(field_name="spc", exclude=True)
+
+    spc_nmco__like = django_filters.CharFilter(
+        field_name="spc_nmco", lookup_expr="icontains"
+    )
+
+    spc_nmsc__like = django_filters.CharFilter(
+        field_name="spc_nmsc", lookup_expr="icontains"
+    )
+
+    spc_nmco__not_like = django_filters.CharFilter(
+        field_name="spc_nmco", lookup_expr="icontains", exclude=True
+    )
+
+    spc_nmsc__not_like = django_filters.CharFilter(
+        field_name="spc_nmsc", lookup_expr="icontains", exclude=True
+    )
+
+    class Meta:
+        model = Species
+        fields = ["spc", "spc_nmco", "spc_nmsc"]

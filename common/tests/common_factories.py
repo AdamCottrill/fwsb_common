@@ -68,3 +68,5 @@ class SpeciesFactory(factory.django.DjangoModelFactory):
     spc = "081"
     spc_lab = "LaTro"
     spc_nmfam = "SALMONINAE"
+    flen2tlen_alpha = 0.0
+    flen2tlen_beta = 1.1

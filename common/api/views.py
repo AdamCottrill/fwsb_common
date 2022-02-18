@@ -11,12 +11,13 @@ from rest_framework.response import Response
 
 from ..models import Species, Lake, ManagementUnit, Grid5
 
-from .filters import Grid5Filter, ManagementUnitFilter, LakeFilter
+from .filters import Grid5Filter, ManagementUnitFilter, LakeFilter, SpeciesFilter
 from .utils import parse_point
 
 from .serializers import (
     SpeciesSerializer,
     SpeciesDetailSerializer,
+    Flen2TlenSerializer,
     LakeSerializer,
     LakeDetailSerializer,
     ManagementUnitSerializer,
@@ -71,6 +72,7 @@ class SpeciesListView(generics.ListAPIView):
 
     queryset = Species.objects.all()
     serializer_class = SpeciesSerializer
+    filterset_class = SpeciesFilter
 
 
 class SpeciesDetailView(generics.RetrieveAPIView):
@@ -78,6 +80,22 @@ class SpeciesDetailView(generics.RetrieveAPIView):
     queryset = Species.objects.all()
     serializer_class = SpeciesDetailSerializer
     lookup_field = "spc"
+
+
+class Flen2TlenListView(generics.ListAPIView):
+    """An api endpoint that returns the flen-tlen regression coefficents
+    for our species. Uses a species filter to select subsets based on
+    species name or species code.
+
+    """
+
+    queryset = (
+        Species.objects.filter(flen2tlen_alpha__isnull=False)
+        .all()
+        .values("spc", "flen2tlen_alpha", "flen2tlen_beta")
+    )
+    serializer_class = Flen2TlenSerializer
+    filterset_class = SpeciesFilter
 
 
 @api_view(["POST"])

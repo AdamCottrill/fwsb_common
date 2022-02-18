@@ -88,6 +88,17 @@ class SpeciesSerializer(serializers.ModelSerializer):
         lookup_field = "spc"
 
 
+class Flen2TlenSerializer(serializers.ModelSerializer):
+
+    intercept = serializers.FloatField(read_only=True, source="flen2tlen_alpha")
+    slope = serializers.FloatField(read_only=True, source="flen2tlen_beta")
+
+    class Meta:
+        model = Species
+        fields = ("spc", "intercept", "slope")
+        lookup_field = "spc"
+
+
 class SpeciesDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Species

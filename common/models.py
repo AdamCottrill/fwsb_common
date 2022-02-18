@@ -1,5 +1,6 @@
 # from django.db import models
 from django.contrib.gis.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 # from django.contrib.gis.db import models
 from django.template.defaultfilters import slugify
@@ -7,7 +8,7 @@ from django.template.defaultfilters import slugify
 
 class BaseModel(models.Model):
     """A base model that will be used by all of our other models that
-incldues a date created and date modified timestamp.
+    incldues a date created and date modified timestamp.
     """
 
     created_date = models.DateTimeField(auto_now_add=True)
@@ -89,7 +90,7 @@ class Lake(BaseModel):
         ordering = ["abbrev"]
 
     def __str__(self):
-        """ String representation for a lake."""
+        """String representation for a lake."""
         return "{} ({})".format(self.lake_name, self.abbrev)
 
     def natural_key(self):
@@ -141,8 +142,7 @@ class Grid5(BaseModel):
         ordering = ["lake__abbrev", "grid"]
 
     def left_pad_grid(self):
-        """
-        """
+        """ """
         try:
             grid = "{:04d}".format(int(self.grid))
         except:
@@ -150,7 +150,7 @@ class Grid5(BaseModel):
         return grid
 
     def __str__(self):
-        """ String representation for a 5-minute grid."""
+        """String representation for a 5-minute grid."""
 
         grid = self.left_pad_grid()
         return "{} ({})".format(grid, self.lake.abbrev)
@@ -291,6 +291,79 @@ class Species(BaseModel):
     royalty_flag = models.BooleanField(default=False)
     quota_flag = models.BooleanField(default=False)
 
+    flen_min = models.FloatField(
+        "Minimum Fork Length (mm)",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(700)],
+    )
+    flen_max = models.FloatField(
+        "Maximim Fork Length (mm)",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(2000)],
+    )
+    tlen_min = models.FloatField(
+        "Minimum Total Length (mm)",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(700)],
+    )
+    tlen_max = models.FloatField(
+        "Maximum Total Length (mm)",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(2000)],
+    )
+    rwt_min = models.FloatField(
+        "Minimum Round Weight (g)",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(5000)],
+    )
+    rwt_max = models.FloatField(
+        "Maximum Round Weight (g)",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(5000)],
+    )
+    k_min_error = models.FloatField(
+        "Minimum K (TLEN) - error",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(2.0)],
+    )
+    k_min_warn = models.FloatField(
+        "Minimum K (TLEN) - warning",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(1.5)],
+    )
+    k_max_error = models.FloatField(
+        "Maximum K (FLEN) - error",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(5.0)],
+    )
+    k_max_warn = models.FloatField(
+        "Maximum K (FLEN) - warning",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(4.0)],
+    )
+    flen2tlen_alpha = models.FloatField(
+        "Intercept of FLEN-TLEN Regression",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(-20.0), MaxValueValidator(80.0)],
+    )
+    flen2tlen_beta = models.FloatField(
+        "Slope of FLEN-TLEN Regression",
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1.0), MaxValueValidator(1.25)],
+    )
+
     objects = SpeciesManager()
 
     class Meta:
@@ -298,7 +371,7 @@ class Species(BaseModel):
         ordering = ["spc"]
 
     def __str__(self):
-        """ String representation for a Species."""
+        """String representation for a Species."""
 
         if self.spc_nmco is not None:
             return "{} ({})".format(self.spc_nmco.title(), self.spc)
