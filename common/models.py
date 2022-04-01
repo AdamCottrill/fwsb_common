@@ -11,6 +11,7 @@ class BaseModel(models.Model):
     incldues a date created and date modified timestamp.
     """
 
+    id = models.AutoField(primary_key=True)
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
 

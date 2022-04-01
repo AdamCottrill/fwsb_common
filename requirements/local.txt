@@ -4,6 +4,8 @@
 #
 #    pip-compile --output-file=local.txt base.in local.in
 #
+asgiref==3.5.0
+    # via django
 atomicwrites==1.4.0
     # via pytest
 attrs==21.4.0
@@ -16,7 +18,7 @@ colorama==0.4.4
     #   pytest
 coverage[toml]==6.3.1
     # via pytest-cov
-django==2.2.27
+django==3.2.12
     # via
     #   -r base.in
     #   django-debug-toolbar

@@ -4,7 +4,9 @@
 #
 #    pip-compile --output-file=base.txt base.in
 #
-django==2.2.27
+asgiref==3.5.0
+    # via django
+django==3.2.12
     # via
     #   -r base.in
     #   django-filter
