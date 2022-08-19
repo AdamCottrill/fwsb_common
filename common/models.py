@@ -142,6 +142,10 @@ class Grid5(BaseModel):
     class Meta:
         ordering = ["lake__abbrev", "grid"]
 
+    @property    
+    def grid0(self):
+        return self.left_pad_grid()
+
     def left_pad_grid(self):
         """ """
         try:

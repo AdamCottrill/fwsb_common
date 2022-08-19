@@ -1,0 +1,119 @@
+{% extends "common/common_base.html" %}
+
+{% block title  %}
+    Management Unit List
+{% endblock %}    
+
+
+{% block content  %}
+
+    <div class="container">
+
+        <div class="row justify-content-between mt-3">
+            <div class="col-8">
+                <h3>Management Unit List:</h3>                
+            </div>
+            
+            <div class="col-2">
+                <div class="input-group my-3">
+                    <input id="management_unit-filter-input" type="text" class="form-control form-control-sm" placeholder="Filter records..." aria-label="Filter management_unit by string" aria-describedby="button-addon1">
+                </div>
+            </div>
+        </div>
+
+        {% if search %}
+            <div class="row justify-content-between mt-3">
+                <div class="col-8">
+                    <p>{{object_list.count}} management_unit found below node {{search}} "<em>{{management_unit.management_unit_label}}</em>".</p>     
+                </div>                            
+                <div class="col-2">
+                    <a href="{% url 'common:management_unit_list'  %}">Reset</a>                                
+                </div>
+            </div>
+
+        {% endif %}
+        
+        {% if object_list %}
+            <table id="management_unit-table" class="table tablesorter">
+                
+                <thead>
+                    <tr>
+                        <th>Slug</th>
+                        <th>Lake</th>
+                        <th>Management Unit Label</th>
+                        <th>Management Unit Type</th>
+                        <th>Primary</th>
+                    </tr>
+                </thead>     
+                <tbody>
+                    {% for object in object_list %}
+                        <tr>
+                            <td><a href="#">{{ object.slug }}</a></td>
+                            <td>{{ object.lake.lake_name|default:"---"  }}</td>                                                     
+                            <td>{{ object.label|default:"---"  }}</td>                         
+                            <td>{{ object.get_mu_type_display|default:"---"  }}</td>
+                            <td>{{ object.primary|default:"---"  }}</td>
+                        </tr>                    
+                    {% endfor %}                   
+                    <tbody>                    
+            </table>
+        {% else %}
+
+            <div class="alert alert-primary" role="alert">
+                <div class="row justify-content-between mt-3">
+                    <div class="col-8">
+                        No management_unit match the criteria {% if search %} <em>"{{search}}"</em>  {% endif %}
+                    </div>                            
+                    <div class="col-2">
+                        <a href="{% url 'common:management_unit_list'  %}">Reset</a>                                
+                    </div>
+                </div>                     
+            </div>
+        {% endif  %}
+        
+    </div>
+
+{% endblock %}
+
+
+
+{% block scripts  %}
+
+    <!-- tablesorter plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.6/js/jquery.tablesorter.js" integrity="sha256-/zMRoPUv1Wfxf3urIyUFn8m1Ot0QmGwXAFHshnwubaE=" crossorigin="anonymous"></script>
+
+    <!-- tablesorter widget file - loaded after the plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.6/js/jquery.tablesorter.widgets.js" integrity="sha256-UIl6E2cmeTSpfPbrMkitLrbyAYUqlOz+zwC+Dc7bglI=" crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+
+     $(".tablesorter").tablesorter({
+         theme: 'bootstrap',
+         widthFixed: true,
+         showProcessing: true,
+         headerTemplate: '{content} {icon}',
+         widgets: ['zebra', 'uitheme', 'scroller'],
+         widgetOptions: {
+             scroller_height: 300,
+             scroller_barWidth: 17,
+             scroller_jumpToHeader: true,
+             scroller_idPrefix: 's_'
+         }
+     });
+
+     $("#management_unit-filter-input").on("keyup", function() {
+         let target = "management_unit-table";
+         let value = $(this).val().toLowerCase();
+         $("#" + target +" tbody tr").filter(function() {
+             $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+         });
+     });
+
+
+    </script>
+
+
+
+
+
+{% endblock %}
