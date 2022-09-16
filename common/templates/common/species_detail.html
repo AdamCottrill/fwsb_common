@@ -1,0 +1,255 @@
+{% extends "common/common_base.html" %}
+
+{% block title  %}
+    {% if  object.spc_nmco %} 
+        {{ object.spc_nmco|title }}
+    {%  else %}
+        {{ object.spc_nmsc }}
+    {% endif %}
+    ({{ object.spc }}) Details        
+    
+
+{% endblock %}    
+
+
+{% block content  %}
+
+    <div class="container">
+
+        <div class="row justify-content-between mt-3">
+            <div class="col-8">
+                {% if object is None %}
+                    <p>Oops! No species details could be found.</p>
+                {% else  %}
+
+                    <h1>
+                        {% if  object.spc_nmco %} 
+                            {{ object.spc_nmco|title }}
+                        {%  else %}
+                            <em>{{ object.spc_nmsc }}</em>
+                        {% endif %}
+                        ({{ object.spc }})
+
+                        
+                    </h1>
+
+                    <div class="my-5">
+                        
+
+                        <h2>Speceis Attributes</h2>
+                        
+                        <table class="table">
+                            <tbody>
+
+                                <tr>
+                                    <td>
+                                        <strong>Species Name:</strong>
+                                    </td>
+                                    <td style="text-transform:capitalize">{{ object.spc_nm|default:"---"  }}</td>
+
+
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Common Name:</strong>
+                                    </td>                                
+                                    <td style="text-transform:capitalize">{{ object.spc_nmco|default:"---"  }}</td>
+
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Scientific Name:</strong>
+                                    </td>
+                                    <td><em>{{ object.spc_nmsc|default:"---"  }}</em></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Abbreviation:</strong>
+                                    </td>
+                                    <td>{{ object.abbrev|default:"---"  }}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>ITIS Code:</strong>
+                                    </td>
+                                    <td>NOT IMPLEMENTED YET</td>
+                                </tr>
+                                
+                                <tr>
+                                    <td>
+                                        <strong>Family Name:</strong>
+                                    </td>
+                                    <td style="text-transform:capitalize">{{ object.spc_nmfam|default:"---"  }}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Species Label:</strong>
+                                    </td>
+                                    <td>{{ object.species_label|default:"---"  }}</td>                            
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Royalty Flag:</strong>
+                                    </td>
+                                    <td>{{ object.royalty_flag|default:"---"  }}</td>                            
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Quota Flag:</strong>
+                                    </td>
+                                    <td>{{ object.quota_flag|default:"---"  }}</td>                            
+                                </tr>                                
+                                
+                            </tbody>                        
+                        </table>
+
+                    </div>
+                    
+                    <div class="my-5">
+
+                        <h2>Length and Weight Bounds</h2>
+
+                        <p>
+                            Species specific limits on length and
+                            weight are used by Process Validate to
+                            ensure that gross errors and typo's are
+                            captured in the validation process and
+                            corrected before the data is
+                            uploaded. These are the broadest default
+                            values available for this species.  These
+                            values appear in the FN012 table for each
+                            project unless they are over-ridden by the
+                            protocol or project lead.
+                            
+                        </p>
+                        
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Fork Length Minimum (mm)</th>
+                                    <th>Fork Length Maximum (mm)</th>                                
+                                    <th>Total Length Minimum (mm)</th>
+                                    <th>Total Length Maximum (mm)</th>                                
+                                    <th>Round Weight Minimum (g)</th>
+                                    <th>Round Weight Maximum (g)</th>                                
+                                    
+                                </tr>                            
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        {{object.flen_min|default:"---"}}
+                                    </td>
+                                    <td>
+                                        {{object.flen_max|default:"---"}}
+                                    </td>
+                                    <td>
+                                        {{object.tlen_min|default:"---"}}
+                                    </td>
+                                    <td>
+                                        {{object.tlen_max|default:"---"}}
+                                    </td>
+                                    <td>
+                                        {{object.rwt_min|default:"---"}}
+                                    </td>
+                                    <td>
+                                        {{object.rwt_max|default:"---"}}
+                                    </td>                                
+                                </tr>
+                            </tbody>
+                            
+                        </table>
+                        
+                    </div>
+                    
+
+                    <div class="my-5">
+                        
+
+
+                        <h2>Condition Factor Limits</h2>
+
+                        <p>
+                            Species specific length factors are used by
+                            Process Validate to identify indiviual fish
+                            that have unusually high or low condition
+                            factors.  The values in the table below are
+                            used to flag individual that are fatter or
+                            thinner than expected based on their length
+                            (warnnings), or are so fat or thin to be
+                            almost certainly wrong (errors).
+                            
+                        </p>
+                        
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>k_min_error</th>
+                                    <th>k_min_warn</th>                                
+                                    <th>k_max_warn</th>                                
+                                    <th>k_max_error</th>                                
+                                </tr>                            
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        {{object.k_min_error|default:"---"}}
+                                    </td>
+                                    <td>
+                                        {{object.k_min_warn|default:"---"}}
+                                    </td>
+                                    <td>
+                                        {{object.k_max_warn|default:"---"}}
+                                    </td>
+                                    <td>
+                                        {{object.k_max_error|default:"---"}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                            
+                        </table>
+
+                    </div>
+
+                    <div class="my-5">
+
+                        
+
+                        
+                        <h2>Fork Length to Total Length Regression Coeffients</h2>
+
+                        <p>
+                            These regression coeffients can be used to estimate total or fork length for {{object}}
+                            records where one of the length measurements are missing
+                        </p>
+                        
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Intercept</th>                                
+                                    <th>Slope</th>
+                                </tr>                            
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        {{object.flen2tlen_alpha|default:"---"}}
+                                    </td>
+                                    <td>
+                                        {{object.flen2tlen_beta|default:"---"}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                            
+                        </table>
+                    </div>                    
+                    
+                {% endif %}
+                
+            </div>
+            
+        </div>
+    </div>
+
+{% endblock %}
+

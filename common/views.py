@@ -1,5 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+
 from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 
 from .models import Grid5, Lake, ManagementUnit, Species
 
@@ -10,6 +12,15 @@ class SpeciesList(ListView):
     model = Species
     queryset = Species.objects.all()
 
+class SpeciesDetail(DetailView):
+
+    template_name = "common/species_detail.html"
+    model = Species
+    slug_field = "spc"
+    queryset = Species.objects.all()
+
+    def get_object(self):
+        return get_object_or_404(Species, spc=self.kwargs['spc'])
     
 class LakeList(ListView):
 

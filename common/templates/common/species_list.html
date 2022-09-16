@@ -50,7 +50,7 @@
                 <tbody>
                     {% for object in object_list %}
                         <tr>
-                            <td><a href="#">{{ object.spc }}</a></td>
+                            <td><a href="{% url 'common:species_detail' spc=object.spc %}">{{ object.spc }}</a></td>
                             <td style="text-transform:capitalize">{{ object.spc_nm|default:"---"  }}</td>                                                     
                             <td style="text-transform:capitalize">{{ object.spc_nmco|default:"---"  }}</td>                         
                             <td><em>{{ object.spc_nmsc|default:"---"  }}</em></td>
