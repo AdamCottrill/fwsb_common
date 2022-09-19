@@ -185,91 +185,6 @@ class Grid5(BaseModel):
         super(Grid5, self).save(*args, **kwargs)
 
 
-class ManagementUnit(BaseModel):
-    """
-    a class to hold geometries associated with arbirary ManagementUnits
-    that can be represented as polygons.  Examples include quota
-    management units and lake trout rehabilitation zones.  Used to find
-    stocking events, cwts, and cwt recoveries occurred in (or
-    potentially near) specific management Units.
-
-    """
-
-    lake = models.ForeignKey(Lake, default=1, on_delete=models.CASCADE)
-
-    label = models.CharField(max_length=25, db_index=True)
-    slug = models.SlugField(blank=True, db_index=True, unique=True, editable=False)
-    description = models.CharField(max_length=1000)
-    geom = models.MultiPolygonField(srid=4326, blank=True, null=True)
-    centroid = models.PointField(srid=4326, blank=True, null=True)
-    envelope = models.PolygonField(srid=4326, blank=True, null=True)
-
-    primary = models.BooleanField(
-        "Primary management unit type for this lake.",
-        default=False,
-        db_index=True,
-    )
-
-    MU_TYPE_CHOICES = (
-        ("mu", "Management Unit"),
-        ("ltrz", "Lake Trout Rehabilitation Zone"),
-        ("bltrz", "Buffered Lake Trout Rehabilitation Zone"),
-        ("qma", "Quota Management Area"),
-        ("aa", "Assessment Area"),
-        ("area", "Area"),
-        ("subarea", "Assessment Area"),
-        ("stat_dist", "Statistical District"),
-        ("moe", "MOE Block"),
-        ("basin", "Basin"),
-        ("naz", "Nearshore Assessment Zone"),
-        ("grid10", "10-Minute Grid"),
-        ("region", "Region"),
-    )
-
-    mu_type = models.CharField(max_length=10, choices=MU_TYPE_CHOICES, default="mu")
-
-    grids = models.ManyToManyField(Grid5)
-
-    objects = ManagementUnitManager()
-
-    class Meta:
-        ordering = ["lake__abbrev", "mu_type", "label"]
-
-    def get_slug(self):
-        """
-        the name is a concatenation of lake abbreviation, the managemnet unit
-        type and and the management unit label.
-        """
-
-        lake = str(self.lake.abbrev)
-
-        return slugify("_".join([lake, self.mu_type, self.label]))
-
-    def name(self):
-        """
-        returns the name of the managment unit including the lake it
-        is associated with, the management unit type and the label
-
-        """
-        return " ".join([str(self.lake), self.mu_type.upper(), self.label])
-
-    def __str__(self):
-        return self.name()
-
-    def save(self, *args, **kwargs):
-        """
-        Populate slug when we save the object.
-        """
-        # if not self.slug:
-
-        if self.geom:
-            self.centroid = self.geom.centroid
-            self.envelope = self.geom.envelope
-
-        self.slug = self.get_slug()
-        super(ManagementUnit, self).save(*args, **kwargs)
-
-
 class ManagementUnitType(BaseModel):
     """A lookup table for management unit types.  Management units
     were originally a choice field in the ManagementUnit model, but
@@ -280,8 +195,8 @@ class ManagementUnitType(BaseModel):
 
     """
 
-    abbrev = models.CharField(max_length=5, db_index=True)
-    label = models.CharField(max_length=25, db_index=True)
+    abbrev = models.CharField(max_length=10, db_index=True)
+    label = models.CharField(max_length=50, db_index=True)
     slug = models.SlugField(blank=True, db_index=True, unique=True, editable=False)
     description = models.CharField(max_length=1000)
 
@@ -324,6 +239,97 @@ class LakeManagementUnitType(BaseModel):
 
     def __str__(self):
         return "{}-{}".format(self.lake.abbrev, self.management_unit_type.abbrev)
+
+
+class ManagementUnit(BaseModel):
+    """
+    a class to hold geometries associated with arbirary ManagementUnits
+    that can be represented as polygons.  Examples include quota
+    management units and lake trout rehabilitation zones.  Used to find
+    stocking events, cwts, and cwt recoveries occurred in (or
+    potentially near) specific management Units.
+
+    """
+
+    # move
+    lake = models.ForeignKey(Lake, default=1, on_delete=models.CASCADE)
+
+    label = models.CharField(max_length=50, db_index=True)
+    slug = models.SlugField(blank=True, db_index=True, unique=True, editable=False)
+    description = models.CharField(max_length=1000)
+    geom = models.MultiPolygonField(srid=4326, blank=True, null=True)
+    centroid = models.PointField(srid=4326, blank=True, null=True)
+    envelope = models.PolygonField(srid=4326, blank=True, null=True)
+
+    # moved
+    primary = models.BooleanField(
+        "Primary management unit type for this lake.",
+        default=False,
+        db_index=True,
+    )
+    # moved
+    MU_TYPE_CHOICES = (
+        ("mu", "Management Unit"),
+        ("ltrz", "Lake Trout Rehabilitation Zone"),
+        ("bltrz", "Buffered Lake Trout Rehabilitation Zone"),
+        ("qma", "Quota Management Area"),
+        ("aa", "Assessment Area"),
+        ("area", "Area"),
+        ("subarea", "Assessment Area"),
+        ("stat_dist", "Statistical District"),
+        ("moe", "MOE Block"),
+        ("basin", "Basin"),
+        ("naz", "Nearshore Assessment Zone"),
+        ("grid10", "10-Minute Grid"),
+        ("region", "Region"),
+    )
+
+    mu_type = models.CharField(max_length=10, choices=MU_TYPE_CHOICES, default="mu")
+
+    lake_management_unit = models.ForeignKey(
+        LakeManagementUnitType, null=True, on_delete=models.CASCADE
+    )
+
+    grids = models.ManyToManyField(Grid5)
+
+    objects = ManagementUnitManager()
+
+    class Meta:
+        ordering = ["lake__abbrev", "mu_type", "label"]
+
+    def get_slug(self):
+        """
+        the name is a concatenation of lake abbreviation, the managemnet unit
+        type and and the management unit label.
+        """
+
+        lake = str(self.lake.abbrev)
+
+        return slugify("_".join([lake, self.mu_type, self.label]))
+
+    def name(self):
+        """
+        returns the name of the managment unit including the lake it
+        is associated with, the management unit type and the label
+
+        """
+        return " ".join([str(self.lake), self.mu_type.upper(), self.label])
+
+    def __str__(self):
+        return self.name()
+
+    def save(self, *args, **kwargs):
+        """
+        Populate slug when we save the object.
+        """
+        # if not self.slug:
+
+        if self.geom:
+            self.centroid = self.geom.centroid
+            self.envelope = self.geom.envelope
+
+        self.slug = self.get_slug()
+        super(ManagementUnit, self).save(*args, **kwargs)
 
 
 class Species(BaseModel):
