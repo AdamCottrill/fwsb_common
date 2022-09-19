@@ -1,0 +1,101 @@
+{% extends "common/common_base.html" %}
+
+{% block title  %}
+        {{ object }} Details        
+{% endblock %}    
+
+{% block content  %}
+
+    <div class="container">
+        <div class="row justify-content-between mt-3">
+            <div class="col-12">
+                <h1>5-Minute Grid Details</h1>
+                {% if object.geom is None %}
+                    <div class="alert alert-warning" role="alert">
+                        Geometry is not currently available for {{ object }}
+                    </div>
+                {% endif %}
+                <div class="row">
+                    <div class="col-4">
+                        <h5>Grid {{ object }} is associated with these management units: </h5>
+
+                        {% if %}
+
+                            <ul>
+                                {%  for mu in mus %}
+                                    <li>
+                                        <a href="{%  url 'common:management_unit_detail' slug=mu.slug %}"> {{ mu.get_mu_type_display }} {{ mu.label }} </a>
+                                    </li>
+                                {% endfor %}                
+                            </ul>                        
+                        {% else %}
+                            <p>Oops!  <em> {{object}}</em>  does
+                                not seem to have any management units associated with it. </p>                                      
+                        {% endif %}                        
+                    </div>
+                    <div class="col-8">
+                        <div id="main_map" style="width: 600px; height: 600px;"></div>                        
+                    </div>                    
+                </div>                              
+            </div>            
+        </div>
+    </div>
+
+{% endblock %}
+
+
+
+{% block scripts %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js"
+            integrity="sha256-fNoRrwkP2GuYPbNSJmMJOCyfRB2DhPQe0rGTgzRsyso="
+            crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css"
+          integrity="sha256-SHMGCYmST46SoyGgo4YR/9AlK1vf3ff84Aq9yK4hdqM="
+          crossorigin="anonymous" />
+    
+    <script type="text/javascript">
+
+     $(document).ready(function(){
+
+         let bbox = {{ object.lake.envelope_ontario.json|safe }};
+         
+         function leafletBounds(bbox){
+             let pt1 = bbox.coordinates[0][0]
+             let pt2 = bbox.coordinates[0][2]
+             return [
+                 [pt1[1], pt1[0]],
+                 [pt2[1], pt2[0]],                         
+             ]
+         }
+         
+         let my_map = new L.map('main_map', {
+             zoomSnap: 0.1
+         }).fitBounds(leafletBounds(bbox));
+
+         {% if object.geom %}
+         let geometry = {{object.geom.json|safe }};
+         L.geoJSON(geometry).addTo(my_map);         
+         {% endif %}
+         
+         // add the OpenStreetMap tiles
+         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+             attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+         }).addTo(my_map);
+
+     }); 
+
+     $("#management_unit-filter-input").on("keyup", function() {
+         let target = "management_unit-table";
+         let value = $(this).val().toLowerCase();
+         $("#" + target +" tbody tr").filter(function() {
+             $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+         });
+     });
+
+    </script>
+    
+
+{% endblock %}
+

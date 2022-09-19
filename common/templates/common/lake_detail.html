@@ -1,0 +1,112 @@
+{% extends "common/common_base.html" %}
+
+{% block title  %}
+
+        {{ object.lake_name }} ({{ object.abbrev }}) Details        
+{% endblock %}    
+
+{% block content  %}
+
+    <div class="container">
+        <div class="row justify-content-between mt-3">
+
+            <h1 class="my-3">{{object.lake_name}}({{object.abbrev}}): </h1>
+            <div id="main_map" style="width: 600px; height: 600px;"></div>
+
+            <div class="row justify-content-between mt-5">
+                <div class="col-8">
+                    <h2>{{object.lake_name }} Management Units:</h2>
+                </div>
+                <div class="col-3">
+                    <div class="input-group my-3">
+                        <input id="management_unit-filter-input" type="text" class="form-control form-control-sm" placeholder="Filter Management Unit Records..." aria-label="Filter management_unit by string" aria-describedby="button-addon1">
+                    </div>
+                </div>
+            </div>
+
+            {% if management_units %}
+                
+                <table id="management_unit-table" class="table tablesorter">
+                    
+                    <thead>
+                        <tr>
+                            <th>Slug</th>
+                            <th>Lake</th>
+                            <th>Management Unit Label</th>
+                            <th>Management Unit Type</th>
+                            <th>Primary</th>
+                        </tr>
+                    </thead>     
+                    <tbody>
+                        {% for manunit in management_units %}
+                            <tr>
+                                <td><a href="{%  url 'common:management_unit_detail' slug=manunit.slug %}">{{ manunit.slug }}</a></td>
+                                <td>{{ object.lake_name|default:"---"  }}</td>                                                     
+                                <td>{{ manunit.label|default:"---"  }}</td>                         
+                                <td>{{ manunit.mu_type|default:"---"  }}</td>
+                                <td>{{ manunit.primary|default:"---"  }}</td>
+                            </tr>                    
+                        {% endfor %}                   
+                    </tbody>                    
+                </table>
+            {% else %}
+                <p>Oops!  <em> {{object}}</em>  does
+                    not seem to have any management units associated with it. </p>                                      
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js"
+            integrity="sha256-fNoRrwkP2GuYPbNSJmMJOCyfRB2DhPQe0rGTgzRsyso="
+            crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css"
+          integrity="sha256-SHMGCYmST46SoyGgo4YR/9AlK1vf3ff84Aq9yK4hdqM="
+          crossorigin="anonymous" />
+    
+    <script type="text/javascript">
+
+     $(document).ready(function(){
+
+         let bbox = {{ object.envelope_ontario.json|safe }};
+
+         let geometry = {{object.geom_ontario.json|safe }}
+             
+             function leafletBounds(bbox){
+                 let pt1 = bbox.coordinates[0][0]
+                 let pt2 = bbox.coordinates[0][2]
+                 return [
+                     [pt1[1], pt1[0]],
+                     [pt2[1], pt2[0]],                         
+                 ]
+             }
+         
+         let my_map = new L.map('main_map', {
+             zoomSnap: 0.1
+         }).fitBounds(leafletBounds(bbox));
+
+         L.geoJSON(geometry).addTo(my_map);
+         
+         // add the OpenStreetMap tiles
+         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+             attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+         }).addTo(my_map);
+
+     }); 
+
+     $("#management_unit-filter-input").on("keyup", function() {
+         let target = "management_unit-table";
+         let value = $(this).val().toLowerCase();
+         $("#" + target +" tbody tr").filter(function() {
+             $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+         });
+     });
+
+    </script>
+    
+
+{% endblock %}

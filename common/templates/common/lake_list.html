@@ -28,7 +28,7 @@ Lake List
                 <tbody>
                     {% for object in object_list %}
                         <tr>
-                            <td><a href="#">{{ object.abbrev }}</a></td>
+                            <td><a href="{% url 'common:lake_detail' abbrev=object.abbrev %}">{{ object.abbrev }}</a></td>
                             <td>{{ object.lake_name|default:"---"  }}</td>                                                     
                             <td>{{ object.centroid.wkt|default:"---"  }}</td>                         
                         </tr>                    

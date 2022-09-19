@@ -47,7 +47,7 @@
                 <tbody>
                     {% for object in object_list %}
                         <tr>
-                            <td><a href="#">{{ object.slug }}</a></td>
+                            <td><a href="{% url 'common:grid5_detail' slug=object.slug %}">{{ object.slug }}</a></td>
                             <td>{{ object.lake.lake_name|default:"---"  }}</td>                                                     
                             <td>{{ object.grid0|default:"---"  }}</td>                         
                            

@@ -1,0 +1,125 @@
+{% extends "common/common_base.html" %}
+
+{% block title  %}
+    {{ object.get_mu_type_display }} {{ object.label }} Details        
+{% endblock %}    
+
+{% block content  %}
+
+    <div class="container">
+        <div class="row justify-content-between mt-3">
+            <h1>{{ object.get_mu_type_display }} {{ object.label }} </h1>
+            {% if object.geom is None %}
+                <div class="alert alert-warning" role="alert">
+                    Geometry is not currently available for {{ object.get_mu_type_display }} {{object.label}}
+                </div>
+            {% endif %}
+            <div class="col-4">
+                <table class="table">
+                    <tr>
+                        <td><strong>Lake:</strong></td>
+                        <td>{{object.lake.lake_name}}( {{object.lake.abbrev}})</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Management Unit Type:</strong></td>
+                        <td>{{object.get_mu_type_display}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Label:</strong></td>
+                        <td>{{object.label}}</td>
+                    </tr>                    
+                </table>
+                
+                {% if object.description and object.description.strip %}
+                    <p>{{ object.description }}</p>
+                {% else %}
+                    <p>A description for  {{ object.get_mu_type_display }} {{ object.label }} is not currently available.</p>                
+                {% endif %}
+            </div>
+            <div class="col-8">
+                <div id="main_map" style="width: 600px; height: 600px;"></div>                
+            </div>            
+        </div>
+        <div class="row justify-content-between mt-3">
+            <h5>
+                <em>{{ object.get_mu_type_display }} {{ object.label }}</em>  contains these 5-minute grids: </h5>
+
+            {% if grids %}                
+                <table class="table">
+                    <tbody>
+                        {% for group in grids %}
+                            <tr>
+                                {% for grid in group %}
+                                    <td>
+                                        <a href="{%  url 'common:grid5_detail' slug=grid.slug %}">{{ grid }}</a>
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}                   
+                    </tbody>
+                </table>
+            {% else %}
+                <p>Oops!  <em>{{ object.get_mu_type_display }} {{ object.label }}</em>  does
+                    not seem to have any 5-minute grids associated with it. </p>               
+            {% endif %}
+        </div>        
+    </div>
+
+{% endblock %}
+
+
+
+{% block scripts %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js"
+            integrity="sha256-fNoRrwkP2GuYPbNSJmMJOCyfRB2DhPQe0rGTgzRsyso="
+            crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css"
+          integrity="sha256-SHMGCYmST46SoyGgo4YR/9AlK1vf3ff84Aq9yK4hdqM="
+          crossorigin="anonymous" />
+    
+    <script type="text/javascript">
+
+     $(document).ready(function(){
+
+         let bbox = {{ object.lake.envelope_ontario.json|safe }};
+         
+         function leafletBounds(bbox){
+             let pt1 = bbox.coordinates[0][0]
+             let pt2 = bbox.coordinates[0][2]
+             return [
+                 [pt1[1], pt1[0]],
+                 [pt2[1], pt2[0]],                         
+             ]
+         }
+         
+         let my_map = new L.map('main_map', {
+             zoomSnap: 0.1
+         }).fitBounds(leafletBounds(bbox));
+
+         {% if object.geom %}
+         let geometry = {{object.geom.json|safe }};
+         L.geoJSON(geometry).addTo(my_map);         
+         {% endif %}
+         
+         // add the OpenStreetMap tiles
+         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+             attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+         }).addTo(my_map);
+
+     }); 
+
+     $("#management_unit-filter-input").on("keyup", function() {
+         let target = "management_unit-table";
+         let value = $(this).val().toLowerCase();
+         $("#" + target +" tbody tr").filter(function() {
+             $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+         });
+     });
+
+    </script>
+    
+
+{% endblock %}
+

@@ -7,54 +7,39 @@
         {{ object.spc_nmsc }}
     {% endif %}
     ({{ object.spc }}) Details        
-    
-
 {% endblock %}    
-
 
 {% block content  %}
 
     <div class="container">
-
         <div class="row justify-content-between mt-3">
             <div class="col-8">
                 {% if object is None %}
                     <p>Oops! No species details could be found.</p>
                 {% else  %}
-
                     <h1>
                         {% if  object.spc_nmco %} 
                             {{ object.spc_nmco|title }}
                         {%  else %}
                             <em>{{ object.spc_nmsc }}</em>
                         {% endif %}
-                        ({{ object.spc }})
-
-                        
+                        ({{ object.spc }})                        
                     </h1>
-
                     <div class="my-5">
-                        
-
                         <h2>Speceis Attributes</h2>
-                        
                         <table class="table">
                             <tbody>
-
                                 <tr>
                                     <td>
                                         <strong>Species Name:</strong>
                                     </td>
                                     <td style="text-transform:capitalize">{{ object.spc_nm|default:"---"  }}</td>
-
-
                                 </tr>
                                 <tr>
                                     <td>
                                         <strong>Common Name:</strong>
                                     </td>                                
                                     <td style="text-transform:capitalize">{{ object.spc_nmco|default:"---"  }}</td>
-
                                 </tr>
                                 <tr>
                                     <td>
@@ -73,8 +58,7 @@
                                         <strong>ITIS Code:</strong>
                                     </td>
                                     <td>NOT IMPLEMENTED YET</td>
-                                </tr>
-                                
+                                </tr>                                
                                 <tr>
                                     <td>
                                         <strong>Family Name:</strong>
@@ -98,17 +82,13 @@
                                         <strong>Quota Flag:</strong>
                                     </td>
                                     <td>{{ object.quota_flag|default:"---"  }}</td>                            
-                                </tr>                                
-                                
+                                </tr>                                                              
                             </tbody>                        
                         </table>
-
                     </div>
                     
                     <div class="my-5">
-
                         <h2>Length and Weight Bounds</h2>
-
                         <p>
                             Species specific limits on length and
                             weight are used by Process Validate to
@@ -119,10 +99,8 @@
                             values available for this species.  These
                             values appear in the FN012 table for each
                             project unless they are over-ridden by the
-                            protocol or project lead.
-                            
-                        </p>
-                        
+                            protocol or project lead.                            
+                        </p>                        
                         <table class="table">
                             <thead>
                                 <tr>
@@ -131,8 +109,7 @@
                                     <th>Total Length Minimum (mm)</th>
                                     <th>Total Length Maximum (mm)</th>                                
                                     <th>Round Weight Minimum (g)</th>
-                                    <th>Round Weight Maximum (g)</th>                                
-                                    
+                                    <th>Round Weight Maximum (g)</th>                                                                    
                                 </tr>                            
                             </thead>
                             <tbody>
@@ -161,14 +138,8 @@
                         </table>
                         
                     </div>
-                    
-
                     <div class="my-5">
-                        
-
-
                         <h2>Condition Factor Limits</h2>
-
                         <p>
                             Species specific length factors are used by
                             Process Validate to identify indiviual fish
@@ -177,8 +148,7 @@
                             used to flag individual that are fatter or
                             thinner than expected based on their length
                             (warnnings), or are so fat or thin to be
-                            almost certainly wrong (errors).
-                            
+                            almost certainly wrong (errors).                            
                         </p>
                         
                         <table class="table">
@@ -205,24 +175,15 @@
                                         {{object.k_max_error|default:"---"}}
                                     </td>
                                 </tr>
-                            </tbody>
-                            
+                            </tbody>                            
                         </table>
-
                     </div>
-
                     <div class="my-5">
-
-                        
-
-                        
                         <h2>Fork Length to Total Length Regression Coeffients</h2>
-
                         <p>
                             These regression coeffients can be used to estimate total or fork length for {{object}}
                             records where one of the length measurements are missing
                         </p>
-                        
                         <table class="table">
                             <thead>
                                 <tr>
@@ -239,15 +200,11 @@
                                         {{object.flen2tlen_beta|default:"---"}}
                                     </td>
                                 </tr>
-                            </tbody>
-                            
+                            </tbody>                            
                         </table>
-                    </div>                    
-                    
-                {% endif %}
-                
-            </div>
-            
+                    </div>                                        
+                {% endif %}                
+            </div>            
         </div>
     </div>
 
