@@ -5,11 +5,16 @@ species, ect.
 """
 
 import pytest
+from common.models import LakeManagementUnitType
+from django.db.utils import IntegrityError
+from django.template.defaultfilters import slugify
 
 from .common_factories import (
-    LakeFactory,
-    ManagementUnitFactory,
     Grid5Factory,
+    LakeFactory,
+    LakeManagementUnitTypeFactory,
+    ManagementUnitFactory,
+    ManagementUnitTypeFactory,
     SpeciesFactory,
 )
 
@@ -83,3 +88,89 @@ def test_species_str():
     species = SpeciesFactory(spc_nmco=spc_nmco, spc=spc)
     shouldbe = "{} ({})".format(spc_nmco, spc)
     assert str(species) == shouldbe
+
+
+@pytest.mark.django_db
+def test_management_unit_type_str():
+    """The string representation of a managemnet unit type should be
+    the label followed by the abbrevation (e.g. - 'Quota Management
+    Area (QMA)')"""
+
+    abbrev = "QMA"
+    label = "Quota Management Area"
+    mu_type = ManagementUnitTypeFactory(abbrev=abbrev, label=label)
+    shouldbe = "{} ({})".format(label, abbrev)
+    assert str(mu_type) == shouldbe
+
+
+@pytest.mark.django_db
+def test_management_unit_type_save():
+    """When we save a management unit type record, a slug should
+    automatically created and be a lower case string of label and
+    abbreviation. (e.g. -  quota_management_area_qma' )"""
+
+    abbrev = "QMA"
+    label = "Quota Management Area"
+    mu_type = ManagementUnitTypeFactory(abbrev=abbrev, label=label)
+    shouldbe = slugify("{}-{}".format(label, abbrev))
+    assert mu_type.slug == shouldbe
+
+
+@pytest.mark.django_db
+def test_lake_management_unit_type_str():
+    """The string representation of a management unit type within a
+    lake is the lake abbreviation, folled by the management unit type
+    abbrev. (e.g. - 'HU-QMA')"""
+
+    lake_abbrev = "HU"
+    lake = LakeFactory(abbrev=lake_abbrev)
+
+    mu_abbrev = "QMA"
+    mu_type = ManagementUnitTypeFactory(abbrev=mu_abbrev)
+
+    lake_mu_type = LakeManagementUnitTypeFactory(
+        lake=lake, management_unit_type=mu_type
+    )
+    should_be = "{}-{}".format(lake_abbrev, mu_abbrev)
+    assert str(lake_mu_type) == should_be
+
+
+@pytest.mark.django_db
+def test_lake_management_unit_type_save_primary_true():
+    """There can only be one management unit type in a lake with
+    primary=True. If we try to create a second, an error will be
+    thrown by the database when we save it."""
+
+    lake_abbrev = "HU"
+    lake = LakeFactory(abbrev=lake_abbrev)
+
+    qma = ManagementUnitTypeFactory(abbrev="QMA", label="Quota management Area")
+    LakeManagementUnitTypeFactory(lake=lake, management_unit_type=qma, primary=True)
+
+    ltrz = ManagementUnitTypeFactory(abbrev="LTRZ", label="Lake Trout Rehab Zone")
+
+    with pytest.raises(IntegrityError):
+        LakeManagementUnitTypeFactory(
+            lake=lake, management_unit_type=ltrz, primary=True
+        )
+
+
+@pytest.mark.django_db
+def test_lake_management_unit_type_save_primary_false():
+    """there can by an arbriary number of management unit types
+    assocaiated with a lake as long as there is only one with
+    'primary'=True"""
+
+    lake_abbrev = "HU"
+    lake = LakeFactory(abbrev=lake_abbrev)
+
+    mu_type = ManagementUnitTypeFactory(abbrev="QMA", label="Quota management Area")
+    LakeManagementUnitTypeFactory(
+        lake=lake, management_unit_type=mu_type, primary=False
+    )
+
+    mu_type = ManagementUnitTypeFactory(abbrev="LTRZ", label="Lake Trout Rehab Zone")
+
+    LakeManagementUnitTypeFactory(
+        lake=lake, management_unit_type=mu_type, primary=False
+    )

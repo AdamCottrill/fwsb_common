@@ -1,8 +1,8 @@
-# from django.db import models
 from django.contrib.gis.db import models
+from django.contrib.gis.db.models import UniqueConstraint, Q
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-# from django.contrib.gis.db import models
+
 from django.template.defaultfilters import slugify
 
 
@@ -142,7 +142,7 @@ class Grid5(BaseModel):
     class Meta:
         ordering = ["lake__abbrev", "grid"]
 
-    @property    
+    @property
     def grid0(self):
         return self.left_pad_grid()
 
@@ -199,13 +199,13 @@ class ManagementUnit(BaseModel):
 
     label = models.CharField(max_length=25, db_index=True)
     slug = models.SlugField(blank=True, db_index=True, unique=True, editable=False)
-    description = models.CharField(max_length=300)
+    description = models.CharField(max_length=1000)
     geom = models.MultiPolygonField(srid=4326, blank=True, null=True)
     centroid = models.PointField(srid=4326, blank=True, null=True)
     envelope = models.PolygonField(srid=4326, blank=True, null=True)
 
     primary = models.BooleanField(
-        "Primary management unit type for this jurisdiciton.",
+        "Primary management unit type for this lake.",
         default=False,
         db_index=True,
     )
@@ -268,6 +268,62 @@ class ManagementUnit(BaseModel):
 
         self.slug = self.get_slug()
         super(ManagementUnit, self).save(*args, **kwargs)
+
+
+class ManagementUnitType(BaseModel):
+    """A lookup table for management unit types.  Management units
+    were originally a choice field in the ManagementUnit model, but
+    moving them to a separate table allows us to dyamically add them
+    in the admin and through the many-to-many relationship through
+    ManagementUnitLake table, enforce a partial contstrain to ensure
+    that there is only one 'primary' management unit type per lake.
+
+    """
+
+    abbrev = models.CharField(max_length=5, db_index=True)
+    label = models.CharField(max_length=25, db_index=True)
+    slug = models.SlugField(blank=True, db_index=True, unique=True, editable=False)
+    description = models.CharField(max_length=1000)
+
+    def __str__(self):
+        return "{} ({})".format(self.label, self.abbrev)
+
+    def save(self, *args, **kwargs):
+        """
+        Populate slug when we save the object.
+        """
+        self.slug = slugify("{}-{}".format(self.label, self.abbrev))
+        super(ManagementUnitType, self).save(*args, **kwargs)
+
+
+class LakeManagementUnitType(BaseModel):
+    """An association table (i.e. explict many-to-many) joining Management
+    Unit Types to Lakes and ensuring that each lake can only have one
+    'primary' management unit.
+
+    """
+
+    lake = models.ForeignKey(Lake, default=1, on_delete=models.CASCADE)
+    management_unit_type = models.ForeignKey(
+        ManagementUnitType, default=1, on_delete=models.CASCADE
+    )
+    primary = models.BooleanField(
+        "Primary management unit type for this lake.",
+        default=False,
+        db_index=True,
+    )
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=["lake"],
+                condition=Q(primary=True),
+                name="unique_lake_manunit_primary",
+            ),
+        ]
+
+    def __str__(self):
+        return "{}-{}".format(self.lake.abbrev, self.management_unit_type.abbrev)
 
 
 class Species(BaseModel):

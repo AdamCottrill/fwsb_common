@@ -6,10 +6,14 @@ species, ect.
 
 import factory
 
-# from django.contrib.gis.geos import GEOSGeometry
-
-# import common.models as common
-from ..models import Lake, ManagementUnit, Grid5, Species
+from ..models import (
+    Lake,
+    ManagementUnit,
+    ManagementUnitType,
+    LakeManagementUnitType,
+    Grid5,
+    Species,
+)
 
 
 class LakeFactory(factory.django.DjangoModelFactory):
@@ -37,6 +41,32 @@ class ManagementUnitFactory(factory.django.DjangoModelFactory):
     description = "A management unit in Lake Huron"
     lake = factory.SubFactory(LakeFactory)
     mu_type = "qma"
+
+
+class ManagementUnitTypeFactory(factory.django.DjangoModelFactory):
+    """
+    A factory for ManagementUnitType objects.
+    """
+
+    class Meta:
+        model = ManagementUnitType
+
+    label = "Quota Managemnent Area"
+    abbrev = "QMA"
+    description = "Management areas used to regulate the commercial fishery."
+
+
+class LakeManagementUnitTypeFactory(factory.django.DjangoModelFactory):
+    """
+    A factory for LakeManagementUnitType objects.
+    """
+
+    class Meta:
+        model = LakeManagementUnitType
+
+    lake = factory.SubFactory(LakeFactory)
+    management_unit_type = factory.SubFactory(ManagementUnitTypeFactory)
+    primary = False
 
 
 class Grid5Factory(factory.django.DjangoModelFactory):
