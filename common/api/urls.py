@@ -9,6 +9,8 @@ from .views import (
     Flen2TlenListView,
     LakeDetailView,
     LakeListView,
+    ManagementUnitTypeListView,
+    LakeManagementUnitTypeListView,
     ManagementUnitListView,
     ManagementUnitDetailView,
     Grid5ListView,
@@ -34,6 +36,16 @@ urlpatterns = router.urls
 urlpatterns += [
     path("lakes/", LakeListView.as_view(), name="lake-list"),
     path("lake/<str:abbrev>", LakeDetailView.as_view(), name="lake-detail"),
+    path(
+        "management_unit_types/",
+        ManagementUnitTypeListView.as_view(),
+        name="management_unit_type-list",
+    ),
+    path(
+        "lake_management_unit_types/",
+        LakeManagementUnitTypeListView.as_view(),
+        name="lake_management_unit_type-list",
+    ),
     path(
         "management_units/",
         ManagementUnitListView.as_view(),

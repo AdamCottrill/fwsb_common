@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models import UniqueConstraint, Q
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db.models import manager
 
 
 from django.template.defaultfilters import slugify
@@ -195,7 +196,7 @@ class ManagementUnitType(BaseModel):
 
     """
 
-    abbrev = models.CharField(max_length=10, db_index=True)
+    abbrev = models.CharField(max_length=10, unique=True, db_index=True)
     label = models.CharField(max_length=50, db_index=True)
     slug = models.SlugField(blank=True, db_index=True, unique=True, editable=False)
     description = models.CharField(max_length=1000)
@@ -207,14 +208,16 @@ class ManagementUnitType(BaseModel):
         """
         Populate slug when we save the object.
         """
-        self.slug = slugify("{}-{}".format(self.label, self.abbrev))
+        self.slug = slugify(self.abbrev)
         super(ManagementUnitType, self).save(*args, **kwargs)
 
 
 class LakeManagementUnitType(BaseModel):
-    """An association table (i.e. explict many-to-many) joining Management
-    Unit Types to Lakes and ensuring that each lake can only have one
-    'primary' management unit.
+    """An association table (i.e. explict many-to-many) joining
+    Management Unit Types to Lakes and ensuring that each lake can
+    only have one 'primary' management unit and each management unit
+    type can only appear within each lake once (A single lake cannot
+    have two QMA management unit types)
 
     """
 
@@ -235,6 +238,10 @@ class LakeManagementUnitType(BaseModel):
                 condition=Q(primary=True),
                 name="unique_lake_manunit_primary",
             ),
+            UniqueConstraint(
+                fields=["lake", "management_unit_type"],
+                name="unique_lake_manunit_type",
+            ),
         ]
 
     def __str__(self):
@@ -254,6 +261,12 @@ class ManagementUnit(BaseModel):
     # move
     lake = models.ForeignKey(Lake, default=1, on_delete=models.CASCADE)
 
+    lake_management_unit_type = models.ForeignKey(
+        LakeManagementUnitType, on_delete=models.CASCADE
+    )
+
+    grids = models.ManyToManyField(Grid5)
+
     label = models.CharField(max_length=50, db_index=True)
     slug = models.SlugField(blank=True, db_index=True, unique=True, editable=False)
     description = models.CharField(max_length=1000)
@@ -261,41 +274,10 @@ class ManagementUnit(BaseModel):
     centroid = models.PointField(srid=4326, blank=True, null=True)
     envelope = models.PolygonField(srid=4326, blank=True, null=True)
 
-    # moved
-    primary = models.BooleanField(
-        "Primary management unit type for this lake.",
-        default=False,
-        db_index=True,
-    )
-    # moved
-    MU_TYPE_CHOICES = (
-        ("mu", "Management Unit"),
-        ("ltrz", "Lake Trout Rehabilitation Zone"),
-        ("bltrz", "Buffered Lake Trout Rehabilitation Zone"),
-        ("qma", "Quota Management Area"),
-        ("aa", "Assessment Area"),
-        ("area", "Area"),
-        ("subarea", "Assessment Area"),
-        ("stat_dist", "Statistical District"),
-        ("moe", "MOE Block"),
-        ("basin", "Basin"),
-        ("naz", "Nearshore Assessment Zone"),
-        ("grid10", "10-Minute Grid"),
-        ("region", "Region"),
-    )
-
-    mu_type = models.CharField(max_length=10, choices=MU_TYPE_CHOICES, default="mu")
-
-    lake_management_unit = models.ForeignKey(
-        LakeManagementUnitType, null=True, on_delete=models.CASCADE
-    )
-
-    grids = models.ManyToManyField(Grid5)
-
     objects = ManagementUnitManager()
 
     class Meta:
-        ordering = ["lake__abbrev", "mu_type", "label"]
+        ordering = ["lake__abbrev", "label"]
 
     def get_slug(self):
         """
@@ -304,8 +286,9 @@ class ManagementUnit(BaseModel):
         """
 
         lake = str(self.lake.abbrev)
+        mu_type = self.lake_management_unit_type.management_unit_type.abbrev
 
-        return slugify("_".join([lake, self.mu_type, self.label]))
+        return slugify("_".join([lake, mu_type, self.label]))
 
     def name(self):
         """
@@ -313,7 +296,8 @@ class ManagementUnit(BaseModel):
         is associated with, the management unit type and the label
 
         """
-        return " ".join([str(self.lake), self.mu_type.upper(), self.label])
+        mu_type = self.lake_management_unit_type.management_unit_type.abbrev
+        return " ".join([str(self.lake.abbrev), mu_type.upper(), self.label])
 
     def __str__(self):
         return self.name()

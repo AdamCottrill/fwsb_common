@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='managementunit',
-            name='lake_management_unit',
+            name='lake_management_unit_type',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='common.lakemanagementunittype'),
         ),
         migrations.AlterField(

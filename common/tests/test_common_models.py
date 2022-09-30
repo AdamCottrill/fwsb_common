@@ -4,6 +4,7 @@ species, ect.
 
 """
 
+
 import pytest
 from common.models import LakeManagementUnitType
 from django.db.utils import IntegrityError
@@ -49,12 +50,19 @@ def test_management_unit_str():
 
     """
 
-    mu_type = "MU"
+    mu_type_abbrev = "MU"
     label = "A Management Unit"
+    mu_type = ManagementUnitTypeFactory(abbrev=mu_type_abbrev, label=label)
 
     lake = LakeFactory(lake_name="Huron", abbrev="HU")
-    management_unit = ManagementUnitFactory(label=label, mu_type=mu_type, lake=lake)
-    shouldbe = "{} {} {}".format(str(lake), mu_type.upper(), label)
+    lake_management_unit_type = LakeManagementUnitTypeFactory(
+        lake=lake, management_unit_type=mu_type
+    )
+
+    management_unit = ManagementUnitFactory(
+        label=label, lake_management_unit_type=lake_management_unit_type, lake=lake
+    )
+    shouldbe = "{} {} {}".format(str(lake.abbrev), mu_type_abbrev.upper(), label)
     assert str(management_unit) == shouldbe
 
 
@@ -112,8 +120,7 @@ def test_management_unit_type_save():
     abbrev = "QMA"
     label = "Quota Management Area"
     mu_type = ManagementUnitTypeFactory(abbrev=abbrev, label=label)
-    shouldbe = slugify("{}-{}".format(label, abbrev))
-    assert mu_type.slug == shouldbe
+    assert mu_type.slug == slugify(abbrev)
 
 
 @pytest.mark.django_db
@@ -133,6 +140,31 @@ def test_lake_management_unit_type_str():
     )
     should_be = "{}-{}".format(lake_abbrev, mu_abbrev)
     assert str(lake_mu_type) == should_be
+
+
+@pytest.mark.django_db
+def test_unique_lake_management_unit_type():
+    """Each lake can have only one of each management unit type - if
+    we try to create a second 'qma' record for a lake that already has
+    a qma management unit type, an error should be thrown.
+
+    """
+
+    lake_abbrev = "HU"
+    lake = LakeFactory(abbrev=lake_abbrev)
+    qma = ManagementUnitTypeFactory(abbrev="QMA", label="Quota management Area")
+
+    # Don't use factories to create these - it will fetch the existing
+    # one instead of trying to create another.
+    qma1 = LakeManagementUnitType(lake=lake, management_unit_type=qma, primary=False)
+
+    qma1.save()
+
+    with pytest.raises(IntegrityError):
+        qma2 = LakeManagementUnitType(
+            lake=lake, management_unit_type=qma, primary=False
+        )
+        qma2.save()
 
 
 @pytest.mark.django_db

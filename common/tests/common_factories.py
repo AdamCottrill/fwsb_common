@@ -29,6 +29,38 @@ class LakeFactory(factory.django.DjangoModelFactory):
     lake_name = "Huron"
 
 
+class ManagementUnitTypeFactory(factory.django.DjangoModelFactory):
+    """
+    A factory for ManagementUnitType objects.
+    """
+
+    class Meta:
+        model = ManagementUnitType
+        django_get_or_create = ("slug",)
+
+    label = "Quota Managemnent Area"
+    abbrev = "QMA"
+    description = "Management areas used to regulate the commercial fishery."
+
+    @factory.lazy_attribute
+    def slug(a):
+        return a.abbrev.lower()
+
+
+class LakeManagementUnitTypeFactory(factory.django.DjangoModelFactory):
+    """
+    A factory for LakeManagementUnitType objects.
+    """
+
+    class Meta:
+        model = LakeManagementUnitType
+        django_get_or_create = ("lake", "management_unit_type")
+
+    lake = factory.SubFactory(LakeFactory)
+    management_unit_type = factory.SubFactory(ManagementUnitTypeFactory)
+    primary = False
+
+
 class ManagementUnitFactory(factory.django.DjangoModelFactory):
     """
     A factory for ManagementUnit objects.
@@ -40,33 +72,7 @@ class ManagementUnitFactory(factory.django.DjangoModelFactory):
     label = "QMA 4-5"
     description = "A management unit in Lake Huron"
     lake = factory.SubFactory(LakeFactory)
-    mu_type = "qma"
-
-
-class ManagementUnitTypeFactory(factory.django.DjangoModelFactory):
-    """
-    A factory for ManagementUnitType objects.
-    """
-
-    class Meta:
-        model = ManagementUnitType
-
-    label = "Quota Managemnent Area"
-    abbrev = "QMA"
-    description = "Management areas used to regulate the commercial fishery."
-
-
-class LakeManagementUnitTypeFactory(factory.django.DjangoModelFactory):
-    """
-    A factory for LakeManagementUnitType objects.
-    """
-
-    class Meta:
-        model = LakeManagementUnitType
-
-    lake = factory.SubFactory(LakeFactory)
-    management_unit_type = factory.SubFactory(ManagementUnitTypeFactory)
-    primary = False
+    lake_management_unit_type = factory.SubFactory(LakeManagementUnitTypeFactory)
 
 
 class Grid5Factory(factory.django.DjangoModelFactory):

@@ -29,8 +29,7 @@ from ..common_factories import LakeFactory
 
 @pytest.fixture()
 def polygonA():
-    """A polygon somewhere in Lake Huron.
-    """
+    """A polygon somewhere in Lake Huron."""
 
     wkt = (
         "MULTIPOLYGON(((-82.0 44.0,"
@@ -44,8 +43,7 @@ def polygonA():
 
 @pytest.fixture()
 def polygonB():
-    """A polygon somewhere in Lake Superior.
-    """
+    """A polygon somewhere in Lake Superior."""
 
     wkt = (
         "MULTIPOLYGON(((-87.0 48.0,"
@@ -59,8 +57,7 @@ def polygonB():
 
 @pytest.fixture()
 def polygonC():
-    """A polygon somewhere in Lake Erie.
-    """
+    """A polygon somewhere in Lake Erie."""
 
     wkt = (
         "MULTIPOLYGON(((-81.0 42.0,"
@@ -74,8 +71,7 @@ def polygonC():
 
 @pytest.fixture()
 def gridList(polygonA, polygonB, polygonC):
-    """a List of 5-minute grid objects - one from each lake.
-    """
+    """a List of 5-minute grid objects - one from each lake."""
 
     huron = LakeFactory(abbrev="HU", lake_name="Lake Huron")
     grid_huron = Grid5(lake=huron, grid="111", geom=polygonA)
@@ -94,8 +90,7 @@ def gridList(polygonA, polygonB, polygonC):
 
 @pytest.mark.django_db
 def test_grid5_api_detail(client, polygonA):
-    """  Grid detail should include: grid number, lake, centroid, envelope,
-    """
+    """Grid detail should include: grid number, lake, centroid, envelope,"""
 
     centroid = polygonA.centroid
     lake = LakeFactory(abbrev="HU", lake_name="Lake Huron")
@@ -122,45 +117,57 @@ def test_grid5_api_detail(client, polygonA):
 
 @pytest.mark.django_db
 def test_grid5_api_list(client, gridList):
-    """Grid list should return all grid objects and accept filter for one or more lakes
-    """
+    """Grid list should return all grid objects and accept filter for
+    one or more lakes"""
 
     url = reverse("common_api:grid5-list")
 
     response = client.get(url)
+
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.data) == len(gridList)
+    results = response.data["results"]
+    assert len(results) == len(gridList)
 
     for obj in gridList:
         obj_dict = {
+            "id": obj.id,
             "grid": obj.grid,
-            "lake": dict(abbrev=obj.lake.abbrev, lake_name=obj.lake.lake_name),
+            "lake_abbrev": obj.lake.abbrev,
             "slug": obj.slug,
-            "centroid": obj.centroid,
+            "centroid": str(obj.centroid),
         }
-        assert obj_dict in response.data
+        assert obj_dict in results
 
 
 @pytest.mark.django_db
 def test_grid5_api_list_filter_one_grid5(client, gridList):
-    """the grid5 list with a filter a single grid5 should retun just that grid5
-    """
+    """the grid5 list with a filter a single grid5 should retun just that grid5"""
 
     url = reverse("common_api:grid5-list")
 
-    response = client.get(url + "?lake=HU")
+    response = client.get(
+        url,
+        {
+            "lake": [
+                "HU",
+            ]
+        },
+    )
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.data) == 1
+    results = response.data["results"]
+    assert len(results) == 1
 
     # extract our expected object:
     obj = gridList[0]
     obj_dict = {
+        "id": obj.id,
         "grid": obj.grid,
-        "lake": dict(abbrev=obj.lake.abbrev, lake_name=obj.lake.lake_name),
+        "lake_abbrev": obj.lake.abbrev,
         "slug": obj.slug,
-        "centroid": obj.centroid,
+        "centroid": str(obj.centroid),
     }
-    assert obj_dict in response.data
+
+    assert obj_dict in results
 
 
 @pytest.mark.django_db
@@ -172,15 +179,18 @@ def test_grid5_api_list_filter_two_grid5s(client, gridList):
 
     url = reverse("common_api:grid5-list")
 
-    response = client.get(url + "?lake=HU,ER")
+    response = client.get(url, {"lake": ["HU, ER"]})
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.data) == 2
+    results = response.data["results"]
+    assert len(results) == 2
 
     for obj in gridList[:2]:
         obj_dict = {
+            "id": obj.id,
             "grid": obj.grid,
-            "lake": dict(abbrev=obj.lake.abbrev, lake_name=obj.lake.lake_name),
+            "lake_abbrev": obj.lake.abbrev,
             "slug": obj.slug,
-            "centroid": obj.centroid,
+            "centroid": str(obj.centroid),
         }
-        assert obj_dict in response.data
+
+        assert obj_dict in results

@@ -5,6 +5,7 @@ needed).
 
   """
 
+
 from rest_framework import serializers
 from ..models import Species, Lake, ManagementUnit, Grid5
 
@@ -51,24 +52,59 @@ class LakeDetailSerializer(DynamicFieldsModelSerializer):
         lookup_field = "abbrev"
 
 
-class ManagementUnitSerializer(serializers.ModelSerializer):
+class LakeManagementUnitTypeSerializer(serializers.Serializer):
+    """"""
 
-    lake = LakeSerializer()
+    id = serializers.IntegerField(read_only=True)
+    lake_abbrev = serializers.CharField(read_only=True)
+    lake_name = serializers.CharField(read_only=True)
+    mu_type_abbrev = serializers.CharField(read_only=True)
+    mu_type_label = serializers.CharField(read_only=True)
+    primary = serializers.BooleanField(read_only=True)
 
-    class Meta:
-        model = ManagementUnit
-        fields = ("label", "lake", "mu_type", "slug", "centroid", "envelope")
-        lookup_field = "slug"
+
+class ManagementUnitTypeSerializer(serializers.Serializer):
+    """"""
+
+    id = serializers.IntegerField(read_only=True)
+    abbrev = serializers.CharField(read_only=True)
+    label = serializers.CharField(read_only=True)
+    desciption = serializers.CharField(read_only=True)
+    slug = serializers.CharField(read_only=True)
 
 
-class Grid5Serializer(serializers.ModelSerializer):
+class ManagementUnitSerializer(serializers.Serializer):
+    """"""
 
-    lake = LakeSerializer(fields=["abbrev", "lake_name"])
+    id = serializers.IntegerField(read_only=True)
+    lake_abbrev = serializers.CharField(read_only=True)
+    label = serializers.CharField(read_only=True)
+    mu_type = serializers.CharField(read_only=True)
+    mu_type_slug = serializers.CharField(read_only=True)
+    slug = serializers.CharField(read_only=True)
+    centroid = serializers.CharField(read_only=True)
+    envelope = serializers.CharField(read_only=True)
 
-    class Meta:
-        model = Grid5
-        fields = ("grid", "lake", "slug", "centroid")
-        lookup_field = "slug"
+
+class Grid5Serializer(serializers.Serializer):
+    """"""
+
+    id = serializers.IntegerField(read_only=True)
+    lake_abbrev = serializers.CharField(read_only=True)
+    grid = serializers.CharField(read_only=True)
+    slug = serializers.CharField(read_only=True)
+    centroid = serializers.CharField(read_only=True)
+
+
+# class Grid5Serializer(serializers.ModelSerializer):
+#
+#    lake = LakeSerializer(fields=["abbrev", "lake_name"])
+#
+#    class Meta:
+#        model = Grid5
+#        fields = ("grid", "lake", "slug", "centroid")
+#        lookup_field = "slug"
+#
 
 
 class Grid5DetailSerializer(serializers.ModelSerializer):

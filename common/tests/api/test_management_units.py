@@ -21,19 +21,22 @@
 """
 
 import pytest
-
+from common.models import ManagementUnit
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework import status
 
-from common.models import ManagementUnit
-from ..common_factories import LakeFactory
+from ..common_factories import (
+    LakeFactory,
+    LakeManagementUnitTypeFactory,
+    ManagementUnitFactory,
+    ManagementUnitTypeFactory,
+)
 
 
 @pytest.fixture()
 def polygonA():
-    """A polygon somewhere in Lake Huron.
-    """
+    """A polygon somewhere in Lake Huron."""
 
     wkt = (
         "MULTIPOLYGON(((-82.0 44.0,"
@@ -51,15 +54,32 @@ def manUnitList(polygonA):
     different lakes.
     """
 
+    # lakes
     huron = LakeFactory(abbrev="HU", lake_name="Lake Huron")
-    huron_qma = ManagementUnit(lake=huron, label="QMA-00", geom=polygonA, mu_type="qma")
+    erie = LakeFactory(abbrev="ER", lake_name="Lake Erie")
+
+    # management unit types
+    qma = ManagementUnitTypeFactory(label="Quota Managemnent Area", abbrev="QMA")
+    aa = ManagementUnitTypeFactory(label="Assessment Area", abbrev="AA")
+
+    # lake management unit types
+    huron_mu1 = LakeManagementUnitTypeFactory(lake=huron, management_unit_type=qma)
+    huron_mu2 = LakeManagementUnitTypeFactory(lake=huron, management_unit_type=aa)
+    erie_mu = LakeManagementUnitTypeFactory(lake=erie, management_unit_type=aa)
+
+    huron_qma = ManagementUnitFactory(
+        lake=huron, label="QMA-00", geom=polygonA, lake_management_unit_type=huron_mu1
+    )
     huron_qma.save()
 
-    huron_aa = ManagementUnit(lake=huron, label="AA-00", geom=polygonA, mu_type="aa")
+    huron_aa = ManagementUnitFactory(
+        lake=huron, label="AA-00", geom=polygonA, lake_management_unit_type=huron_mu2
+    )
     huron_aa.save()
 
-    erie = LakeFactory(abbrev="ER", lake_name="Lake Erie")
-    erie_aa = ManagementUnit(lake=erie, label="AA-00", geom=polygonA, mu_type="aa")
+    erie_aa = ManagementUnitFactory(
+        lake=erie, label="AA-00", geom=polygonA, lake_management_unit_type=erie_mu
+    )
     erie_aa.save()
 
     return [huron_qma, huron_aa, erie_aa]
@@ -68,14 +88,20 @@ def manUnitList(polygonA):
 @pytest.mark.django_db
 def test_management_unit_api_detail(client, polygonA):
     """the api endpoint for a single management unit should return label,
-  mu-type, slug, lake, centroid, and envelope.
+    mu-type, slug, lake, centroid, and envelope.
 
     """
 
     centroid = polygonA.centroid
     lake = LakeFactory(abbrev="HU", lake_name="Lake Huron")
 
-    mu = ManagementUnit(lake=lake, geom=polygonA, label="QMA-00")
+    qma = ManagementUnitTypeFactory(label="Quota Management Area", abbrev="QMA")
+
+    huron_qma = LakeManagementUnitTypeFactory(lake=lake, management_unit_type=qma)
+
+    mu = ManagementUnit(
+        lake=lake, geom=polygonA, label="QMA-00", lake_management_unit_type=huron_qma
+    )
     mu.save()
 
     url = reverse("common_api:management_unit-detail", kwargs={"slug": mu.slug})
@@ -83,16 +109,29 @@ def test_management_unit_api_detail(client, polygonA):
     response = client.get(url)
     assert response.status_code == status.HTTP_200_OK
 
-    expected_keys = ["label", "slug", "lake", "centroid", "envelope"]
+    expected_keys = [
+        "id",
+        "lake_abbrev",
+        "label",
+        "mu_type",
+        "mu_type_slug",
+        "slug",
+        "centroid",
+        "envelope",
+    ]
+
     for key in expected_keys:
         assert key in response.data.keys()
 
     observed = response.data
 
-    assert observed["slug"] == "hu_mu_qma-00"
+    assert observed["slug"] == "hu_qma_qma-00"
     assert observed["centroid"] == centroid
-    ##assert observed["envelope"] == polygonA.wkt
-    assert observed["lake"] == {"abbrev": "HU", "lake_name": "Lake Huron"}
+    # assert observed["envelope"] == str(polygonA)
+    assert observed["lake_abbrev"] == "HU"
+
+    assert observed["mu_type"] == "Quota Management Area"
+    assert observed["mu_type_slug"] == "qma"
 
 
 @pytest.mark.django_db
@@ -107,20 +146,21 @@ def test_management_unit_api_list(client, manUnitList):
 
     response = client.get(url)
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.data) == len(manUnitList)
-
-    observed = response.data
+    results = response.data["results"]
+    assert len(results) == len(manUnitList)
 
     for obj in manUnitList:
         obj_dict = {
+            "id": obj.id,
+            "lake_abbrev": obj.lake.abbrev,
             "label": obj.label,
+            "mu_type": obj.lake_management_unit_type.management_unit_type.label,
+            "mu_type_slug": obj.lake_management_unit_type.management_unit_type.slug,
             "slug": obj.slug,
-            "lake": dict(abbrev=obj.lake.abbrev, lake_name=obj.lake.lake_name),
-            "mu_type": obj.mu_type,
             "centroid": "SRID=4326;" + obj.centroid.wkt,
             "envelope": "SRID=4326;" + obj.envelope.wkt,
         }
-        assert obj_dict in observed
+        assert obj_dict in results
 
 
 @pytest.mark.django_db
@@ -133,46 +173,50 @@ def test_management_unit_list_lake_filter(client, manUnitList):
 
     url = reverse("common_api:management_unit-list")
 
-    response = client.get(url + "?lake=HU")
+    response = client.get(url, {"lake": "HU"})
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.data) == 2
-
-    observed = response.data
+    results = response.data["results"]
+    assert len(results) == 2
 
     for obj in manUnitList[:2]:
         obj_dict = {
+            "id": obj.id,
+            "lake_abbrev": obj.lake.abbrev,
             "label": obj.label,
+            "mu_type": obj.lake_management_unit_type.management_unit_type.label,
+            "mu_type_slug": obj.lake_management_unit_type.management_unit_type.slug,
             "slug": obj.slug,
-            "lake": dict(abbrev=obj.lake.abbrev, lake_name=obj.lake.lake_name),
-            "mu_type": obj.mu_type,
             "centroid": "SRID=4326;" + obj.centroid.wkt,
             "envelope": "SRID=4326;" + obj.envelope.wkt,
         }
-        assert obj_dict in observed
+
+        assert obj_dict in results
 
 
 @pytest.mark.django_db
 def test_management_unit_list_mu_type_filter(client, manUnitList):
-    """The managemnent unit endpoint accepts a filter for management unit type - if a
+    """
+    The managemnent unit endpoint accepts a filter for management unit type - if a
     management unit type is specified in the url, only management units from that
     type should be returned.
     """
 
     url = reverse("common_api:management_unit-list")
 
-    response = client.get(url + "?mu_type=aa")
+    response = client.get(url, {"mu_type": "aa"})
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.data) == 2
-
-    observed = response.data
+    results = response.data["results"]
+    assert len(results) == 2
 
     for obj in manUnitList[1:]:
         obj_dict = {
+            "id": obj.id,
+            "lake_abbrev": obj.lake.abbrev,
             "label": obj.label,
+            "mu_type": obj.lake_management_unit_type.management_unit_type.label,
+            "mu_type_slug": obj.lake_management_unit_type.management_unit_type.slug,
             "slug": obj.slug,
-            "lake": dict(abbrev=obj.lake.abbrev, lake_name=obj.lake.lake_name),
-            "mu_type": obj.mu_type,
             "centroid": "SRID=4326;" + obj.centroid.wkt,
             "envelope": "SRID=4326;" + obj.envelope.wkt,
         }
-        assert obj_dict in observed
+        assert obj_dict in results

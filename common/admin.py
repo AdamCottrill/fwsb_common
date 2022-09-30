@@ -1,6 +1,6 @@
 from django.contrib.gis import admin
 from django import forms
-from .models import Lake, ManagementUnit, Species, Grid5
+from .models import Lake, ManagementUnit, Species, Grid5, ManagementUnitType,  LakeManagementUnitType
 
 admin.site.empty_value_display = "(None)"
 
@@ -15,8 +15,8 @@ class ManagementUnitChangeForm(forms.ModelForm):
             "geom",
             "centroid",
             "envelope",
-            "primary",
-            "mu_type",
+            # "primary",
+            # "mu_type",
             "grids",
         ]
 
@@ -50,8 +50,8 @@ class ManagementUnitCreationForm(forms.ModelForm):
             "geom",
             "centroid",
             "envelope",
-            "primary",
-            "mu_type",
+            # "primary",
+            # "mu_type",
             "grids",
         ]
 
@@ -61,15 +61,13 @@ class ManagementUnitCreationForm(forms.ModelForm):
         return my_model
 
 
-@admin.register(Lake)
-class LakeAdmin(admin.OSMGeoAdmin):
-    list_display = ("lake_name", "abbrev")
-
-
 @admin.register(ManagementUnit)
 class ManagementUnitAdmin(admin.ModelAdmin):
-    list_display = ("label", "lake", "mu_type", "description")
-    list_filter = ("lake", "mu_type")
+    # list_display = ("label", "lake", "mu_type", "description")
+    # list_filter = ("lake", "mu_type")
+
+    list_display = ("label", "lake", "description")
+    list_filter = ("lake",)
     list_select_related = ("lake",)
 
     def get_queryset(self, request):
@@ -103,6 +101,28 @@ class ManagementUnitAdmin(admin.ModelAdmin):
         return super(ManagementUnitAdmin, self).get_form(request, obj, **defaults)
 
 
+
+@admin.register(ManagementUnitType)
+class ManagementUnitType(admin.OSMGeoAdmin):
+    list_display = ("abbrev", "label")
+    readonly_fields = ["slug",]
+
+    
+@admin.register(LakeManagementUnitType)
+class LakeManagementUnitType(admin.OSMGeoAdmin):
+    list_display = ("lake", "management_unit_type", "primary")
+    list_filter = ( "primary", "lake", "management_unit_type")
+
+    def lake(obj):
+        return f"{obj.lake.lake_name} ({obj.lake.abbrev})"
+    def management_unit_type(obj):
+        return f"{obj.management_unit_type.label} ({obj.management_unit_type.abbrev})"
+
+@admin.register(Lake)
+class LakeAdmin(admin.OSMGeoAdmin):
+    list_display = ("lake_name", "abbrev")
+
+    
 @admin.register(Species)
 class SpeciesAdmin(admin.ModelAdmin):
     search_fields = ["spc_nmco", "spc_nmsc", "spc"]

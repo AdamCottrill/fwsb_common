@@ -15,9 +15,10 @@ records.
 
 
 import django_filters
+from common.tests.common_factories import LakeManagementUnitTypeFactory
 from django_filters import rest_framework as filters
 
-from ..models import Grid5, ManagementUnit, Lake, Species
+from ..models import Grid5, Lake, LakeManagementUnitType, ManagementUnit, Species
 
 
 class ValueInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
@@ -35,16 +36,37 @@ class LakeFilter(filters.FilterSet):
         fields = ["abbrev"]
 
 
+class LakeManagementUnitTypeFilter(filters.FilterSet):
+    """Lake objects.  We want to be able to filter them
+    by lake abbreviation (e.g. ?lake=HU)"""
+
+    lake = ValueInFilter(field_name="lake__abbrev", lookup_expr="in")
+    mu_type = ValueInFilter(field_name="management_unit_type__slug", lookup_expr="in")
+
+    is_primary = django_filters.BooleanFilter(field_name="primary")
+
+    class Meta:
+        model = LakeManagementUnitType
+        fields = ["lake__abbrev", "management_unit_type__abbrev", "primary"]
+
+
 class ManagementUnitFilter(filters.FilterSet):
     """Management Unit objects.  We want to be able to filter them
     by lake abbreviation (e.g. ?lake=HU) and type (?mu_type="ltrz")"""
 
     lake = ValueInFilter(field_name="lake__abbrev", lookup_expr="in")
-    mu_type = ValueInFilter(field_name="mu_type", lookup_expr="in")
+    mu_type = ValueInFilter(
+        field_name="lake_management_unit_type__management_unit_type__slug",
+        lookup_expr="in",
+    )
+
+    # primary
 
     class Meta:
         model = ManagementUnit
-        fields = ["lake", "mu_type"]
+        fields = [
+            "lake",
+        ]
 
 
 class Grid5Filter(filters.FilterSet):

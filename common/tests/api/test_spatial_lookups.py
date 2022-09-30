@@ -21,13 +21,19 @@ import pytest
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework import status
-from ..common_factories import LakeFactory, ManagementUnitFactory, Grid5Factory
+
+from ..common_factories import (
+    Grid5Factory,
+    LakeFactory,
+    LakeManagementUnitTypeFactory,
+    ManagementUnitFactory,
+    ManagementUnitTypeFactory,
+)
 
 
 @pytest.fixture()
 def polygonA():
-    """A polygon somewhere in Lake Huron.
-    """
+    """A polygon somewhere in Lake Huron."""
 
     wkt = (
         "MULTIPOLYGON(((-82.0 44.0,"
@@ -41,8 +47,7 @@ def polygonA():
 
 @pytest.fixture()
 def polygonB():
-    """A polygon somewhere in Lake Superior
-    """
+    """A polygon somewhere in Lake Superior"""
     wkt = (
         "MULTIPOLYGON(((-87.0 48.0,"
         + "-87.5 48.0,"
@@ -77,8 +82,18 @@ def test_get_spatial_attributes(client, polygonA):
     huron = dict(abbrev="HU", lake_name="Lake Huron", geom=polygonA)
     huron_obj = LakeFactory(**huron)
 
+    mu_type = ManagementUnitTypeFactory(
+        slug="stat_dist", abbrev="stat_dist", label="Statistical District"
+    )
+    lake_mu_type = LakeManagementUnitTypeFactory(
+        lake=huron_obj, management_unit_type=mu_type
+    )
+
     ManagementUnitFactory(
-        label="OH-3", lake=huron_obj, geom=polygonA, mu_type="stat_dist"
+        label="OH-3",
+        lake=huron_obj,
+        geom=polygonA,
+        lake_management_unit_type=lake_mu_type,
     )
 
     Grid5Factory(grid=1234, lake=huron_obj, geom=polygonA)
@@ -130,8 +145,18 @@ def test_get_spatial_attributes_empty(client, polygonA, polygonB):
     huron = dict(abbrev="HU", lake_name="Lake Huron", geom=polygonA)
     huron_obj = LakeFactory(**huron)
 
+    mu_type = ManagementUnitTypeFactory(
+        slug="stat_dist", abbrev="stat_dist", label="Statistical District"
+    )
+    lake_mu_type = LakeManagementUnitTypeFactory(
+        lake=huron_obj, management_unit_type=mu_type
+    )
+
     ManagementUnitFactory(
-        label="OH-3", lake=huron_obj, geom=polygonA, mu_type="stat_dist"
+        label="OH-3",
+        lake=huron_obj,
+        geom=polygonA,
+        lake_management_unit_type=lake_mu_type,
     )
 
     Grid5Factory(grid=1234, lake=huron_obj, geom=polygonA)
@@ -244,16 +269,41 @@ def test_get_manUnit_from_point_pure_wo_param(client, polygonA, polygonB):
 
     huron = LakeFactory(abbrev="HU", lake_name="Lake Huron")
 
+    stat_dist = ManagementUnitTypeFactory(
+        slug="stat_dist", abbrev="stat_dist", label="Statistical District"
+    )
+
+    qma = ManagementUnitTypeFactory(
+        slug="qma", abbrev="QMA", label="Quota Management Zone"
+    )
+
+    huron_qma = LakeManagementUnitTypeFactory(
+        lake=huron, management_unit_type=qma, primary=False
+    )
+
+    huron_stat_dist = LakeManagementUnitTypeFactory(
+        lake=huron, management_unit_type=stat_dist, primary=True
+    )
+
     ManagementUnitFactory(
-        label="OH-1", lake=huron, geom=polygonA, primary=True, mu_type="stat_dist"
+        label="OH-1",
+        lake=huron,
+        geom=polygonA,
+        lake_management_unit_type=huron_stat_dist,
     )
     ManagementUnitFactory(
-        label="OH-2", lake=huron, geom=polygonB, primary=True, mu_type="stat_dist"
+        label="OH-2",
+        lake=huron,
+        geom=polygonB,
+        lake_management_unit_type=huron_stat_dist,
     )
 
     # same geometry as OH-1, different mu type and primary designation:
     ManagementUnitFactory(
-        label="QMA-1", lake=huron, geom=polygonA, primary=False, mu_type="qma"
+        label="QMA-1",
+        lake=huron,
+        geom=polygonA,
+        lake_management_unit_type=huron_qma,
     )
 
     url = reverse("common_api:api-lookup-management-unit-from-pt")
@@ -261,7 +311,16 @@ def test_get_manUnit_from_point_pure_wo_param(client, polygonA, polygonB):
     response = client.post(url, {"point": centroid.wkt})
     assert response.status_code == status.HTTP_200_OK
 
-    expected_keys = ["id", "slug", "label", "mu_type", "centroid", "envelope"]
+    expected_keys = [
+        "id",
+        "lake_abbrev",
+        "label",
+        "mu_type",
+        "mu_type_slug",
+        "slug",
+        "centroid",
+        "envelope",
+    ]
 
     for key in expected_keys:
         assert key in response.data.keys()
@@ -283,13 +342,42 @@ def test_get_manUnit_from_point_pure_w_param(client, polygonA, polygonB):
     assert polygonA.contains(centroid) is True
 
     huron = LakeFactory(abbrev="HU", lake_name="Lake Huron")
-    ManagementUnitFactory(label="OH-1", lake=huron, geom=polygonA, mu_type="stat_dist")
-    ManagementUnitFactory(label="OH-2", lake=huron, geom=polygonB, mu_type="stat_dist")
 
-    # same geometry, different mu type and primary designation.  This
-    # is the one we should get back:
+    stat_dist = ManagementUnitTypeFactory(
+        slug="stat_dist", abbrev="stat_dist", label="Statistical District"
+    )
+
+    qma = ManagementUnitTypeFactory(
+        slug="qma", abbrev="QMA", label="Quota Management Zone"
+    )
+
+    huron_qma = LakeManagementUnitTypeFactory(
+        lake=huron, management_unit_type=qma, primary=False
+    )
+
+    huron_stat_dist = LakeManagementUnitTypeFactory(
+        lake=huron, management_unit_type=stat_dist, primary=True
+    )
+
     ManagementUnitFactory(
-        label="QMA-1", lake=huron, geom=polygonA, primary=False, mu_type="qma"
+        label="OH-1",
+        lake=huron,
+        geom=polygonA,
+        lake_management_unit_type=huron_stat_dist,
+    )
+    ManagementUnitFactory(
+        label="OH-2",
+        lake=huron,
+        geom=polygonB,
+        lake_management_unit_type=huron_stat_dist,
+    )
+
+    # same geometry as OH-1, different mu type and primary designation:
+    ManagementUnitFactory(
+        label="QMA-1",
+        lake=huron,
+        geom=polygonA,
+        lake_management_unit_type=huron_qma,
     )
 
     url = reverse("common_api:api-lookup-management-unit-from-pt")
@@ -320,12 +408,41 @@ def test_get_manUnit_from_point_pure_w_all(client, polygonA, polygonB):
 
     huron = LakeFactory(abbrev="HU", lake_name="Lake Huron")
 
-    ManagementUnitFactory(label="OH-1", lake=huron, geom=polygonA)
-    ManagementUnitFactory(label="OH-2", lake=huron, geom=polygonB)
+    stat_dist = ManagementUnitTypeFactory(
+        slug="stat_dist", abbrev="stat_dist", label="Statistical District"
+    )
 
-    # same geometry, different mu type and primary designation:
+    qma = ManagementUnitTypeFactory(
+        slug="qma", abbrev="QMA", label="Quota Management Zone"
+    )
+
+    huron_qma = LakeManagementUnitTypeFactory(
+        lake=huron, management_unit_type=qma, primary=False
+    )
+
+    huron_stat_dist = LakeManagementUnitTypeFactory(
+        lake=huron, management_unit_type=stat_dist, primary=True
+    )
+
     ManagementUnitFactory(
-        label="QMA-1", lake=huron, geom=polygonA, primary=False, mu_type="qma"
+        label="OH-1",
+        lake=huron,
+        geom=polygonA,
+        lake_management_unit_type=huron_stat_dist,
+    )
+    ManagementUnitFactory(
+        label="OH-2",
+        lake=huron,
+        geom=polygonB,
+        lake_management_unit_type=huron_stat_dist,
+    )
+
+    # same geometry as OH-1, different mu type and primary designation:
+    ManagementUnitFactory(
+        label="QMA-1",
+        lake=huron,
+        geom=polygonA,
+        lake_management_unit_type=huron_qma,
     )
 
     url = reverse("common_api:api-lookup-management-unit-from-pt")
