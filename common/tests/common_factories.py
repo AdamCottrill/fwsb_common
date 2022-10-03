@@ -13,6 +13,8 @@ from ..models import (
     LakeManagementUnitType,
     Grid5,
     Species,
+    BottomType,
+    CoverType,
 )
 
 
@@ -106,3 +108,31 @@ class SpeciesFactory(factory.django.DjangoModelFactory):
     spc_nmfam = "SALMONINAE"
     flen2tlen_alpha = 0.0
     flen2tlen_beta = 1.1
+
+
+class BottomTypeFactory(factory.django.DjangoModelFactory):
+    """
+    A factory for bottom types.
+    """
+
+    class Meta:
+        model = BottomType
+        django_get_or_create = ("abbrev",)
+
+    abbrev = "BO"
+    label = "Boulder"
+    obsolete_date = None
+
+
+class CoverTypeFactory(factory.django.DjangoModelFactory):
+    """
+    A factory for cover types.
+    """
+
+    class Meta:
+        model = CoverType
+        django_get_or_create = ("abbrev",)
+
+    abbrev = "MA"
+    label = "Macrophytes"
+    obsolete_date = None

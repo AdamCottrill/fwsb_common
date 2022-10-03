@@ -1,4 +1,6 @@
+from datetime import datetime, timezone
 from django.db import models
+from django.utils.text import slugify
 
 
 class BaseModel(models.Model):
@@ -45,13 +47,13 @@ class LookupModel(BaseModel):
         return (self.abbrev,)
 
     def depreciate(self):
-
-        self.obsolete_date = datetime.now()
-        self.save()
+        if self.obsolete_date is None:
+            self.obsolete_date = datetime.now(timezone.utc).astimezone()
+            self.save()
 
     def reactivate(self):
-
-        self.obsolete_date = None
+        if self.obsolete_date:
+            self.obsolete_date = None
         self.save()
 
     @property
@@ -62,5 +64,5 @@ class LookupModel(BaseModel):
         """
         Populate slug, centroid, and bounding box when we save the object.
         """
-        self.slug = slugify(f"{self.label}-{self.slug}")
+        self.slug = slugify(f"{self.label}-{self.abbrev}")
         super(LookupModel, self).save(*args, **kwargs)
