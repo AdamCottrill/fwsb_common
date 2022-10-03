@@ -1,0 +1,22 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    <div>
+
+        <h1>Add Values to the <em>{{model_name}}</em> Lookup Table</h1>
+
+        <p>This page can be used to insert new values into the  <em>{{model_name}}</em> lookup table.  The file must be
+        a csv, with the headings 'abbrev' and 'label' (all lower
+        case).  All of the values in this file must be new, and
+        valid. Any errors will cause the whole upload to fail.</p>
+        
+        <form action="." method="POST" enctype="multipart/form-data">
+            {{ form.as_p }}
+            {% csrf_token %}
+
+            <button type="submit">Upload {{model_name}} CSV</button>
+        </form>
+    </div>
+    <br />
+
+{% endblock %}
