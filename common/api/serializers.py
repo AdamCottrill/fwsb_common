@@ -142,6 +142,18 @@ class SpeciesDetailSerializer(serializers.ModelSerializer):
         lookup_field = "spc"
 
 
+class TaxonSerializer(serializers.Serializer):
+    # read_only taxon serializer
+
+    taxon = serializers.CharField(read_only=True)
+    itiscode = serializers.IntegerField(read_only=True)
+    taxon_name = serializers.CharField(read_only=True)
+    taxon_label = serializers.CharField(read_only=True)
+    taxonomic_rank = serializers.CharField(read_only=True)
+    vertinvert = serializers.CharField(read_only=True)
+    omnr_provincial_code = serializers.CharField(read_only=True)
+
+
 class LookupTableSerializer(serializers.Serializer):
     """"""
 

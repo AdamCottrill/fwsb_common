@@ -18,6 +18,7 @@ from ..models import (
     ManagementUnit,
     ManagementUnitType,
     Species,
+    Taxon,
     BottomType,
     CoverType,
 )
@@ -26,6 +27,7 @@ from .filters import (
     LakeFilter,
     ManagementUnitFilter,
     SpeciesFilter,
+    TaxonFilter,
     LakeManagementUnitTypeFilter,
 )
 from .serializers import (
@@ -39,6 +41,7 @@ from .serializers import (
     ManagementUnitTypeSerializer,
     SpeciesDetailSerializer,
     SpeciesSerializer,
+    TaxonSerializer,
     LookupTableSerializer,
 )
 from .utils import parse_point
@@ -197,6 +200,26 @@ class SpeciesDetailView(generics.RetrieveAPIView):
     queryset = Species.objects.all()
     serializer_class = SpeciesDetailSerializer
     lookup_field = "spc"
+
+
+class TaxonListView(generics.ListAPIView):
+
+    serializer_class = TaxonSerializer
+    pagination_class = StandardResultsSetPagination
+    filterset_class = TaxonFilter
+
+    def get_queryset(self):
+
+        qs = Taxon.objects.all().values(
+            "taxon",
+            "itiscode",
+            "taxon_name",
+            "taxon_label",
+            "taxonomic_rank",
+            "vertinvert",
+            "omnr_provincial_code",
+        )
+        return qs
 
 
 class BottomTypeListView(generics.ListAPIView):

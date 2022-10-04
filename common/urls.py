@@ -2,6 +2,7 @@ from django.urls import path, re_path, include
 from .views import (
     SpeciesList,
     SpeciesDetail,
+    TaxonList,
     Grid5List,
     Grid5Detail,
     LakeList,
@@ -21,6 +22,7 @@ urlpatterns = [
     re_path(
         r"species/(?P<spc>[0-9]{3})/", SpeciesDetail.as_view(), name="species_detail"
     ),
+    path("taxon", TaxonList.as_view(), name="taxon_list"),
     path("grid5s", Grid5List.as_view(), name="grid5_list"),
     path("grid5/<slug:slug>/", Grid5Detail.as_view(), name="grid5_detail"),
     path("management_units", ManagementUnitList.as_view(), name="management_unit_list"),

@@ -50,7 +50,7 @@ DJANGO_APPS = [
     "django.contrib.gis",
 ]
 
-THIRD_PARTY_APPS = ["django_filters", "rest_framework"]
+THIRD_PARTY_APPS = ["treebeard", "django_filters", "rest_framework"]
 
 MY_APPS = ["common.apps.CommonConfig"]
 

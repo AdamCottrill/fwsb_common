@@ -1,8 +1,104 @@
-from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from treebeard.mp_tree import MP_Node
 
-from .managers import SpeciesManager
 from .base_models import BaseModel
+from .managers import SpeciesManager
+
+
+class BaseTreeModel(MP_Node):
+    """A base model that will be used by all of our other models that
+    incldues a date created and date modified timestamp.
+    """
+
+    id = models.AutoField(primary_key=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    modified_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class Taxon(BaseTreeModel):
+    """A lookup table for taxon - used for non-fish and diet data.
+    Taxon will contain an optional foreign key to species where that is appropraite.
+
+    """
+
+    # spc  optional foreign key to Species
+
+    TAXON_RANK_CHOICES = (
+        ("other", "Other"),
+        ("domain", "Domain"),
+        ("kingdom", "Kingdom"),
+        ("subkingdom", "Subkingdom"),
+        ("infrakingdom", "Infrakingdom"),
+        ("superphylum", "Superphylum"),
+        ("phylum", "Phylum"),
+        ("infraphylum", "Infraphylum"),
+        ("subphylum", "Subphylum"),
+        ("class", "Class"),
+        ("subclass", "Subclass"),
+        ("superclass", "Superclass"),
+        ("infraclass", "Infraclass"),
+        ("order", "Order"),
+        ("infraorder", "Infraorder"),
+        ("suborder", "Suborder"),
+        ("superorder", "Superorder"),
+        ("genus", "Genus"),
+        ("subgenus", "Subgenus"),
+        ("family", "Family"),
+        ("superfamily", "Superfamily"),
+        ("subfamily", "Subfamily"),
+        ("tribe", "Tribe"),
+        ("species", "Species"),
+    )
+
+    taxon = models.CharField(max_length=10, unique=True, db_index=True)
+    itiscode = models.CharField(
+        "ITIS TSN", max_length=10, unique=True, db_index=True, blank=True, null=True
+    )
+
+    taxon_name = models.CharField(
+        "Scientific Name", max_length=100, blank=True, null=True
+    )
+    taxon_label = models.CharField("Common Name", max_length=100, blank=True, null=True)
+    taxonomic_rank = models.CharField(
+        max_length=15,
+        blank=True,
+        null=True,
+        choices=TAXON_RANK_CHOICES,
+        default="species",
+    )
+
+    VERTINVERT_CHOICES = [
+        ("other", "Other"),
+        ("plant", "Plant"),
+        ("invertebrate", "Invertebrate"),
+        ("vertebrate", "Vertebrate"),
+    ]
+
+    vertinvert = models.CharField(
+        max_length=12, choices=VERTINVERT_CHOICES, default="invertebrate"
+    )
+    omnr_provincial_code = models.CharField(
+        "HHFAU Code", max_length=4, unique=True, db_index=True, blank=True, null=True
+    )
+    # codetype
+
+    class Meta:
+
+        ordering = ["taxon"]
+
+    def __str__(self):
+        """String representation for a taxon."""
+
+        name = self.taxon_name if self.taxon_name else self.taxon_label
+
+        return "{} (taxon = {})".format(name.title(), self.taxon)
+
+    def natural_key(self):
+        return (self.taxon,)
 
 
 class Species(BaseModel):

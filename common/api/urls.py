@@ -6,6 +6,7 @@ from rest_framework.routers import SimpleRouter
 from .views import (
     SpeciesListView,  # LakeViewSet,
     SpeciesDetailView,
+    TaxonListView,
     Flen2TlenListView,
     LakeDetailView,
     LakeListView,
@@ -61,6 +62,7 @@ urlpatterns += [
     path("grid5s/", Grid5ListView.as_view(), name="grid5-list"),
     path("grid5/<slug:slug>", Grid5DetailView.as_view(), name="grid5-detail"),
     path("species/", SpeciesListView.as_view(), name="species-list"),
+    path("taxon/", TaxonListView.as_view(), name="taxon-list"),
     path("species/<str:spc>", SpeciesDetailView.as_view(), name="species-detail"),
     path("bottom_types/", BottomTypeListView.as_view(), name="bottom-type-list"),
     path("cover_types/", CoverTypeListView.as_view(), name="cover-type-list"),

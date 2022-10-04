@@ -9,4 +9,4 @@ from .spatial_models import (
 
 from .lookups import BottomType, CoverType
 
-from .species_taxon import Species
+from .species_taxon import Species, Taxon

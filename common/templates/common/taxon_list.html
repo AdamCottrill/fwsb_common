@@ -1,0 +1,130 @@
+
+{% extends "common/common_base.html" %}
+
+
+
+{% block content  %}
+
+    <div class="container">
+
+        <div class="row justify-content-between mt-3">
+            <div class="col-8">
+                <h3>Taxon List:</h3>                
+            </div>
+            
+            <div class="col-2">
+                <div class="input-group my-3">
+                    <input id="taxon-filter-input" type="text" class="form-control form-control-sm" placeholder="Filter records..." aria-label="Filter taxon by string" aria-describedby="button-addon1">
+                </div>
+            </div>
+        </div>
+
+        {% if search %}
+            <div class="row justify-content-between mt-3">
+                <div class="col-8">
+                    <p>{{object_list.count}} taxon found below node {{search}} "<em>{{taxon.taxon_label}}</em>".</p>     
+                </div>                            
+                <div class="col-2">
+                    <a href="{% url 'common:taxon_list'  %}">Reset</a>                                
+                </div>
+            </div>
+
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    {% for item in taxon.get_ancestors %}
+                        <li class="breadcrumb-item"><a href="{% url 'common:taxon_list' %}?search={{item.taxon}}">{{item.taxon_name}}</a></li>
+                    {% endfor %}
+                </ol>
+            </nav>
+
+        {% endif %}
+        
+        {% if object_list %}
+            <table id="taxon-table" class="table tablesorter">
+                
+                <thead>
+                    <tr>
+                        <th>Taxon</th>
+                        <th>ITIS Code</th>
+                        <th>Common Name</th>
+                        <th>Scientific Name</th>                    
+                        <th>Taxonomic Rank</th>
+                        <th>Vert-Invert</th>
+                        <th>HHFAU Code</th>            
+                    </tr>
+                </thead>     
+                <tbody>
+                    {% for object in object_list %}
+                        <tr>
+                            <td><a href="{%url 'common:taxon_list' %}?search={{object.taxon}}">{{ object.taxon }}</a></td>
+                            <td>{{ object.itiscode }}</td>
+                            <td style="text-transform:capitalize">{{ object.taxon_label|default:"---"  }}</td>
+                            <td><em>{{ object.taxon_name|default:"---"  }}</em></td>
+                            <td>{{ object.get_taxonomic_rank_display|default:"---"  }}</td>
+                            <td>{{ object.get_vertinvert_display|default:"---"  }}</td>
+                            <td>{{ object.omnr_provincial_code|default:"---"  }}</td>
+                            
+                        </tr>                    
+                    {% endfor %}                   
+                    <tbody>                    
+            </table>
+        {% else %}
+
+            <div class="alert alert-primary" role="alert">
+                <div class="row justify-content-between mt-3">
+                    <div class="col-8">
+                        No taxon match the criteria {% if search %} <em>"{{search}}"</em>  {% endif %}
+                    </div>                            
+                    <div class="col-2">
+                        <a href="{% url 'common:taxon_list'  %}">Reset</a>                                
+                    </div>
+                </div>                     
+            </div>
+        {% endif  %}
+        
+    </div>
+
+{% endblock %}
+
+
+
+{% block scripts  %}
+
+    <!-- tablesorter plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.6/js/jquery.tablesorter.js" integrity="sha256-/zMRoPUv1Wfxf3urIyUFn8m1Ot0QmGwXAFHshnwubaE=" crossorigin="anonymous"></script>
+
+    <!-- tablesorter widget file - loaded after the plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.6/js/jquery.tablesorter.widgets.js" integrity="sha256-UIl6E2cmeTSpfPbrMkitLrbyAYUqlOz+zwC+Dc7bglI=" crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+
+     $(".tablesorter").tablesorter({
+         theme: 'bootstrap',
+         widthFixed: true,
+         showProcessing: true,
+         headerTemplate: '{content} {icon}',
+         widgets: ['zebra', 'uitheme', 'scroller'],
+         widgetOptions: {
+             scroller_height: 300,
+             scroller_barWidth: 17,
+             scroller_jumpToHeader: true,
+             scroller_idPrefix: 's_'
+         }
+     });
+
+     $("#taxon-filter-input").on("keyup", function() {
+         let target = "taxon-table";
+         let value = $(this).val().toLowerCase();
+         $("#" + target +" tbody tr").filter(function() {
+             $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+         });
+     });
+
+
+    </script>
+
+
+
+
+
+{% endblock %}

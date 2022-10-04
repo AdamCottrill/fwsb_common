@@ -6,4 +6,4 @@ from .spatial_models import (
     ManagementUnitAdmin,
     ManagementUnitTypeAdmin,
 )
-from .species_taxon import SpeciesAdmin
+from .species_taxon import SpeciesAdmin, TaxonAdmin

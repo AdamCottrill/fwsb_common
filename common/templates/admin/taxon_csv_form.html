@@ -1,0 +1,38 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    <div>
+
+        <h1>Add a New Taxon Entry</h1>
+
+        <p>This page can be used to insert new taxon objects to the
+        taxon table.  The file must be a csv, with these (lower
+        case) headings:</p>
+
+        <ul>
+            <li>taxon</li>
+            <li>itiscode</li>
+            <li>taxon_name</li>
+            <li>taxon_label</li>
+            <li>taxonomic_rank</li>
+            <li>vertinvert</li>
+            <li>parent_tsn</li>
+        </ul>
+
+        <p>csv files for this upload can be created from R-script
+        which compiles the records from the ITIS database.  Each
+        record represents an entry in the taxonomic tree and they must
+        be ordered to reflect the taxonomic hierarchy - with the most
+        detailed level last.  Taxomnic entries that already exist will
+        be ignored, but new ones will be created.</p>
+        
+        <form action="." method="POST" enctype="multipart/form-data">
+            {{ form.as_p }}
+            {% csrf_token %}
+
+            <button type="submit">Upload Taxon CSV</button>
+        </form>
+    </div>
+    <br />
+
+{% endblock %}

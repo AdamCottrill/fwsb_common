@@ -15,13 +15,16 @@ records.
 
 
 import django_filters
-from common.tests.common_factories import LakeManagementUnitTypeFactory
 from django_filters import rest_framework as filters
 
-from ..models import Grid5, Lake, LakeManagementUnitType, ManagementUnit, Species
+from ..models import Grid5, Lake, LakeManagementUnitType, ManagementUnit, Species, Taxon
 
 
 class ValueInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
+    pass
+
+
+class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
     pass
 
 
@@ -104,3 +107,83 @@ class SpeciesFilter(django_filters.FilterSet):
     class Meta:
         model = Species
         fields = ["spc", "spc_nmco", "spc_nmsc"]
+
+
+def taxon_node_filter(queryset, name, value):
+    """A custom query method to return all of the values from a node
+    and its children.
+
+    Arguments:
+
+    - `queryset`: A queryset that can be related directly or through
+      joins to itis_taxon.Taxon model
+
+    - `name`: string represtenting relationship from current model to
+       itis_taxon.Taxon model.  Expects django's "__" conventions
+
+    - `value`: the taxon value (itis code or HHFAU code) associated
+      with the target node.
+
+    """
+
+    if not value:
+        return queryset
+
+    taxon = Taxon.objects.filter(taxon=value).first()
+
+    if taxon:
+        descendants = [x[0] for x in taxon.get_descendants().values_list("taxon")]
+        descendants.append(taxon.taxon)
+
+        queryset = queryset.filter(**{"%s__in" % name: descendants}).order_by("path")
+
+    return queryset
+
+
+class TaxonFilter(django_filters.FilterSet):
+
+    # "taxon",
+    taxon = ValueInFilter(field_name="taxon")
+
+    taxon__node = django_filters.CharFilter(
+        field_name="taxon", method=taxon_node_filter
+    )
+
+    # "itiscode",
+    # exact
+    itiscode = NumberInFilter(field_name="itiscode")
+
+    # "taxon_name",
+    taxon_name = django_filters.CharFilter(field_name="taxon_name", lookup_expr="exact")
+    taxon_name__like = django_filters.CharFilter(
+        field_name="taxon_name", lookup_expr="icontains"
+    )
+
+    # "taxon_label",
+    taxon_label = django_filters.CharFilter(
+        field_name="taxon_label", lookup_expr="exact"
+    )
+    taxon_label__like = django_filters.CharFilter(
+        field_name="taxon_label", lookup_expr="icontains"
+    )
+
+    # "taxonomic_rank",
+    taxonomic_rank = ValueInFilter(field_name="taxonomic_rank")
+
+    # "vertinvert",
+    vertinvert = ValueInFilter(field_name="vertinvert")
+
+    # "omnr_provincial_code",
+    hhfau = ValueInFilter(field_name="omnr_provincial_code")
+
+    class Meta:
+        model = Taxon
+        fields = [
+            "taxon",
+            "itiscode",
+            "taxon_name",
+            "taxon_label",
+            "taxonomic_rank",
+            "vertinvert",
+            "omnr_provincial_code",
+        ]
