@@ -19,7 +19,7 @@
             </div>
         </div>
 
-        {% if search %}
+        {% if search and object_list.count %}
             <div class="row justify-content-between mt-3">
                 <div class="col-8">
                     <p>{{object_list.count}} taxon found below node {{search}} "<em>{{taxon.taxon_label}}</em>".</p>     

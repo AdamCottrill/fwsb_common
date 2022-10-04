@@ -46,12 +46,24 @@ class TaxonList(ListView):
                 taxon = Taxon.objects.filter(taxon=int(search)).first()
                 return taxon
             except ValueError:
-                return None
+                return search
+        else:
+            return None
 
     def get_queryset(self):
         """ """
 
-        taxon = self.get_taxon()
+        # taxon = self.get_taxon()
+
+        search = self.request.GET.get("search")
+        taxon = None
+        if search:
+            try:
+                taxon = Taxon.objects.filter(taxon=int(search)).first()
+            except ValueError:
+                pass
+            if taxon is None:
+                return []
 
         if taxon:
             descendants = taxon.get_descendants()
