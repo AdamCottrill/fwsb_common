@@ -4,7 +4,7 @@ The veiws in this file should all be publicly available as readonly.
 
 """
 
-from django.db.models import F
+from django.db.models import F, Case, Value, When
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
@@ -18,6 +18,8 @@ from ..models import (
     ManagementUnit,
     ManagementUnitType,
     Species,
+    BottomType,
+    CoverType,
 )
 from .filters import (
     Grid5Filter,
@@ -37,6 +39,7 @@ from .serializers import (
     ManagementUnitTypeSerializer,
     SpeciesDetailSerializer,
     SpeciesSerializer,
+    LookupTableSerializer,
 )
 from .utils import parse_point
 
@@ -194,6 +197,70 @@ class SpeciesDetailView(generics.RetrieveAPIView):
     queryset = Species.objects.all()
     serializer_class = SpeciesDetailSerializer
     lookup_field = "spc"
+
+
+class BottomTypeListView(generics.ListAPIView):
+
+    serializer_class = LookupTableSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+
+        all = self.request.query_params.get("all", "")
+        if all.lower() in ["true", "1", "t"]:
+            qs = BottomType.all_objects.all()
+        else:
+            qs = BottomType.objects.all()
+
+        qs = qs.annotate(
+            is_active=Case(
+                When(obsolete_date__isnull=True, then=True),
+                When(obsolete_date__isnull=False, then=False),
+                default=Value(None),
+            )
+        ).values(
+            "id",
+            "abbrev",
+            "label",
+            "description",
+            "slug",
+            "is_active",
+        )
+
+        return qs
+
+
+class CoverTypeListView(generics.ListAPIView):
+
+    serializer_class = LookupTableSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+
+        all = self.request.query_params.get("all", "")
+        if all.lower() in ["true", "1", "t"]:
+            qs = BottomType.all_objects.all()
+        if all:
+            qs = CoverType.all_objects.all()
+        else:
+            qs = CoverType.objects.all()
+
+        qs = qs.annotate(
+            is_active=Case(
+                When(obsolete_date__isnull=True, then=True),
+                When(obsolete_date__isnull=False, then=False),
+                default=Value(None),
+            )
+        ).values(
+            "id",
+            "abbrev",
+            "label",
+            "description",
+            "slug",
+            "is_active",
+        )
+
+        return qs
 
 
 class Flen2TlenListView(generics.ListAPIView):

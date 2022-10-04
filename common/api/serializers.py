@@ -140,3 +140,14 @@ class SpeciesDetailSerializer(serializers.ModelSerializer):
         model = Species
         fields = ("spc", "abbrev", "spc_nmco", "spc_nmsc", "spc_nmfam", "spc_lab")
         lookup_field = "spc"
+
+
+class LookupTableSerializer(serializers.Serializer):
+    """"""
+
+    id = serializers.IntegerField(read_only=True)
+    abbrev = serializers.CharField(read_only=True)
+    label = serializers.CharField(read_only=True)
+    description = serializers.CharField(read_only=True)
+    slug = serializers.CharField(read_only=True)
+    is_active = serializers.BooleanField(read_only=True)
