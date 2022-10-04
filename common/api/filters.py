@@ -145,9 +145,7 @@ class TaxonFilter(django_filters.FilterSet):
     # "taxon",
     taxon = ValueInFilter(field_name="taxon")
 
-    taxon__node = django_filters.CharFilter(
-        field_name="taxon", method=taxon_node_filter
-    )
+    taxon_node = django_filters.CharFilter(field_name="taxon", method=taxon_node_filter)
 
     # "itiscode",
     # exact

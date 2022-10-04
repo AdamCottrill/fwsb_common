@@ -13,6 +13,7 @@ from ..models import (
     LakeManagementUnitType,
     Grid5,
     Species,
+    Taxon,
     BottomType,
     CoverType,
 )
@@ -108,6 +109,24 @@ class SpeciesFactory(factory.django.DjangoModelFactory):
     spc_nmfam = "SALMONINAE"
     flen2tlen_alpha = 0.0
     flen2tlen_beta = 1.1
+
+
+class TaxonFactory(factory.django.DjangoModelFactory):
+    """
+    A factory for Species objects.
+    """
+
+    class Meta:
+        model = Taxon
+        django_get_or_create = ("itiscode",)
+
+    taxon = "161989"
+    itiscode = 161989
+    taxon_name = "Oncorhynchus mykiss"
+    taxon_label = "rainbow trout"
+    taxonomic_rank = "species"
+    vertinvert = "vertebrate"
+    omnr_provincial_code = "F076"
 
 
 class BottomTypeFactory(factory.django.DjangoModelFactory):
