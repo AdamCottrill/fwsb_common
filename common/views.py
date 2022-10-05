@@ -1,9 +1,9 @@
-from django.db.models import Q, Subquery
+from django.db.models import F, Q, Subquery
 from django.shortcuts import get_object_or_404
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
-from .models import Grid5, Lake, ManagementUnit, Species, Taxon
+from .models import Grid5, Lake, LakeManagementUnitType, ManagementUnit, Species, Taxon
 
 
 def grouped(items, ncol):
@@ -109,7 +109,13 @@ class LakeDetail(DetailView):
         """Add the list of management units for this lake to our context"""
         context = super().get_context_data(**kwargs)
         context["management_units"] = ManagementUnit.objects.filter(
-            lake__abbrev=self.kwargs["abbrev"]
+             lake__abbrev=self.kwargs["abbrev"]
+            ).prefetch_related("lake_management_unit_type",
+                               "lake_management_unit_type__management_unit_type"
+            ).annotate(
+                primary=F("lake_management_unit_type__primary"),
+                mu_type=F("lake_management_unit_type__management_unit_type__label"),
+
         ).values("slug", "label", "primary", "mu_type")
         return context
 
