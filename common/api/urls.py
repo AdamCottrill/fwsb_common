@@ -18,6 +18,7 @@ from .views import (
     Grid5DetailView,
     BottomTypeListView,
     CoverTypeListView,
+    VesselListView,
     #    spatial_lookup,
     get_lake_from_pt,
     get_management_unit_from_pt,
@@ -66,6 +67,7 @@ urlpatterns += [
     path("species/<str:spc>", SpeciesDetailView.as_view(), name="species-detail"),
     path("bottom_types/", BottomTypeListView.as_view(), name="bottom-type-list"),
     path("cover_types/", CoverTypeListView.as_view(), name="cover-type-list"),
+    path("vessels/", VesselListView.as_view(), name="vessel-list"),
     path("flen2tlen/", Flen2TlenListView.as_view(), name="flen2tlen-list"),
     path("spatial_lookup/lake/", get_lake_from_pt, name="api-lookup-lake-from-pt"),
     path(

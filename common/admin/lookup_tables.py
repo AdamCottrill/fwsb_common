@@ -6,7 +6,7 @@ from django.shortcuts import HttpResponseRedirect, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.urls import path
 
-from ..models import BottomType, CoverType
+from ..models import BottomType, CoverType, Vessel
 from .admin_utils import ObsoleteLookupFilter, CsvImportForm
 
 
@@ -73,6 +73,15 @@ class BottomTypeAdmin(LookupAdminBase):
 
 @admin.register(CoverType)
 class CoverTypeAdmin(LookupAdminBase):
+    search_fields = ["abbrev", "label"]
+    list_display = ("abbrev", "label", "is_active")
+    list_filter = [
+        ObsoleteLookupFilter,
+    ]
+
+
+@admin.register(Vessel)
+class VesselAdmin(LookupAdminBase):
     search_fields = ["abbrev", "label"]
     list_display = ("abbrev", "label", "is_active")
     list_filter = [

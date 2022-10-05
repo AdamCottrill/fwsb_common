@@ -5,11 +5,23 @@ etc.)
 
 """
 
-from datetime import datetime
+
 from django.db import models
-from django.utils.text import slugify
+
 from .base_models import LookupModel
 from .managers import LookupManager
+
+
+class Vessel(LookupModel):
+    """A lookup table for our vessels.  Attributes 'abbrev' and
+    'label' may not be ideal, but it is workable for today."""
+
+    #override the abbrev field to increase its size
+    abbrev = models.CharField(max_length=6, unique=True, db_index=True)
+
+    all_objects = models.Manager()
+    objects = LookupManager()
+
 
 
 class CoverType(LookupModel):

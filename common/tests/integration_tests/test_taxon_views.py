@@ -78,9 +78,5 @@ def test_taxon_table_invalid_search(client, taxon_list):
     assert response.status_code == 200
     assertTemplateUsed(response, "common/taxon_list.html")
 
-    fname = "c:/Users/COTTRILLAD/1work/scrapbook/wtf.html"
-    with open(fname, "wb") as f:
-        f.write(response.content)
-
     expected = f'No taxon match the criteria <em>"{search_criteria}"</em>'
     assertContains(response, expected, html=True)

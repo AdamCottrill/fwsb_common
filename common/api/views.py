@@ -21,6 +21,7 @@ from ..models import (
     Taxon,
     BottomType,
     CoverType,
+    Vessel
 )
 from .filters import (
     Grid5Filter,
@@ -284,6 +285,38 @@ class CoverTypeListView(generics.ListAPIView):
         )
 
         return qs
+
+
+class VesselListView(generics.ListAPIView):
+
+    serializer_class = LookupTableSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+
+        all = self.request.query_params.get("all", "")
+        if all.lower() in ["true", "1", "t"]:
+            qs = Vessel.all_objects.all()
+        else:
+            qs = Vessel.objects.all()
+
+        qs = qs.annotate(
+            is_active=Case(
+                When(obsolete_date__isnull=True, then=True),
+                When(obsolete_date__isnull=False, then=False),
+                default=Value(None),
+            )
+        ).values(
+            "id",
+            "abbrev",
+            "label",
+            "description",
+            "slug",
+            "is_active",
+        )
+
+        return qs
+
 
 
 class Flen2TlenListView(generics.ListAPIView):

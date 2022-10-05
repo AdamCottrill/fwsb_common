@@ -16,6 +16,7 @@ from ..models import (
     Taxon,
     BottomType,
     CoverType,
+    Vessel
 )
 
 
@@ -154,4 +155,18 @@ class CoverTypeFactory(factory.django.DjangoModelFactory):
 
     abbrev = "MA"
     label = "Macrophytes"
+    obsolete_date = None
+
+
+class VesselFactory(factory.django.DjangoModelFactory):
+    """
+    A factory for Vessels.
+    """
+
+    class Meta:
+        model = Vessel
+        django_get_or_create = ("abbrev",)
+
+    abbrev = "RV-OE"
+    label = "Ontario Explorer"
     obsolete_date = None

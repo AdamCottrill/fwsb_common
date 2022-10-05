@@ -7,6 +7,6 @@ from .spatial_models import (
     LakeManagementUnitType,
 )
 
-from .lookups import BottomType, CoverType
+from .lookups import BottomType, CoverType, Vessel
 
 from .species_taxon import Species, Taxon

@@ -93,9 +93,10 @@ def test_bottom_list_expected_attributes(client, bottom_types):
         assert key in response.data[0].keys()
 
     observed = response.data[0]
+    expected = bottom_types[0]
 
-    assert observed["abbrev"] == "BO"
-    assert observed["label"] == "Boulder"
-    assert observed["slug"] == "boulder-bo"
-    assert observed["description"] == "Big rocks."
-    assert observed["is_active"] == True
+    assert observed["abbrev"] == expected.abbrev
+    assert observed["label"] == expected.label
+    assert observed["slug"] == expected.slug
+    assert observed["description"] == expected.description
+    assert observed["is_active"] == expected.is_active
