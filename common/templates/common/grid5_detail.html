@@ -24,7 +24,7 @@
                             <ul>
                                 {%  for mu in mus %}
                                     <li>
-                                        <a href="{%  url 'common:management_unit_detail' slug=mu.slug %}"> {{ mu.get_mu_type_display }} {{ mu.label }} </a>
+                                        <a href="{%  url 'common:management_unit_detail' slug=mu.slug %}"> {{ mu.short_name }} </a>
                                     </li>
                                 {% endfor %}                
                             </ul>                        
@@ -59,8 +59,6 @@
 
      $(document).ready(function(){
 
-         let bbox = {{ object.lake.envelope_ontario.json|safe }};
-         
          function leafletBounds(bbox){
              let pt1 = bbox.coordinates[0][0]
              let pt2 = bbox.coordinates[0][2]
@@ -69,6 +67,13 @@
                  [pt2[1], pt2[0]],                         
              ]
          }
+
+         
+         {% if object.lake.envelope_ontario  %}
+         const bbox = {{ object.lake.envelope_ontario.json|safe }};
+         {% else %}
+         const bbox = '{"type":"Polygon","coordinates":[[[-92.094,41.381],[-92.094,49.016],[-76.059,49.016],[-76.059,41.381],[-92.094,41.381]]]}';
+         {%  endif %}
          
          let my_map = new L.map('main_map', {
              zoomSnap: 0.1

@@ -46,9 +46,16 @@
                         <tr>
                             <td><a href="{%  url 'common:management_unit_detail' slug=object.slug %}">{{ object.slug }}</a></td>
                             <td>{{ object.lake.lake_name|default:"---"  }}</td>                                                     
-                            <td>{{ object.label|default:"---"  }}</td>                         
-                            <td>{{ object.get_mu_type_display|default:"---"  }}</td>
-                            <td>{{ object.primary|default:"---"  }}</td>
+                            <td>{{ object.short_name|default:"---"  }}</td>                         
+                            <td>{{ object.lake_management_unit_type.management_unit_type.label|default:"---"  }}</td>
+                            <td>
+                                {%  if object.lake_management_unit_type.primary%}
+                                    Yes
+                                {%  else %}
+                                    No
+                                    {% endif %}
+
+                            </td>
                         </tr>                    
                     {% endfor %}                   
                 </tbody>                    

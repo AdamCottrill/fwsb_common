@@ -135,7 +135,7 @@ def taxon_node_filter(queryset, name, value):
         descendants = [x[0] for x in taxon.get_descendants().values_list("taxon")]
         descendants.append(taxon.taxon)
 
-        queryset = queryset.filter(**{"%s__in" % name: descendants}).order_by("path")
+        queryset = queryset.filter(**{"%s__in" % name: descendants})
 
     return queryset
 

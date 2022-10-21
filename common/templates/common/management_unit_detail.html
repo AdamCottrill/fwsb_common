@@ -1,17 +1,17 @@
 {% extends "common/common_base.html" %}
 
 {% block title  %}
-    {{ object.get_mu_type_display }} {{ object.label }} Details        
+     {{ object.short_name }} Details        
 {% endblock %}    
 
 {% block content  %}
 
     <div class="container">
         <div class="row justify-content-between mt-3">
-            <h1>{{ object.get_mu_type_display }} {{ object.label }} </h1>
+            <h1>{{ object.short_name }} </h1>
             {% if object.geom is None %}
                 <div class="alert alert-warning" role="alert">
-                    Geometry is not currently available for {{ object.get_mu_type_display }} {{object.label}}
+                    Geometry is not currently available for {{object.short_name}}
                 </div>
             {% endif %}
             <div class="col-4">
@@ -22,7 +22,9 @@
                     </tr>
                     <tr>
                         <td><strong>Management Unit Type:</strong></td>
-                        <td>{{object.get_mu_type_display}}</td>
+                        <td>
+                            {{object.lake_management_unit_type.management_unit_type.label}} ({{object.lake_management_unit_type.management_unit_type.abbrev}})
+                            </td>
                     </tr>
                     <tr>
                         <td><strong>Label:</strong></td>
@@ -33,7 +35,7 @@
                 {% if object.description and object.description.strip %}
                     <p>{{ object.description }}</p>
                 {% else %}
-                    <p>A description for  {{ object.get_mu_type_display }} {{ object.label }} is not currently available.</p>                
+                    <p>A description for  {{ object.short_name }} is not currently available.</p>                
                 {% endif %}
             </div>
             <div class="col-8">
@@ -42,7 +44,7 @@
         </div>
         <div class="row justify-content-between mt-3">
             <h5>
-                <em>{{ object.get_mu_type_display }} {{ object.label }}</em>  contains these 5-minute grids: </h5>
+                <em>{{ object.short_name }}</em>  contains these 5-minute grids: </h5>
 
             {% if grids %}                
                 <table class="table">
@@ -59,7 +61,7 @@
                     </tbody>
                 </table>
             {% else %}
-                <p>Oops!  <em>{{ object.get_mu_type_display }} {{ object.label }}</em>  does
+                <p>Oops!  <em>{{ object.short_name }}</em>  does
                     not seem to have any 5-minute grids associated with it. </p>               
             {% endif %}
         </div>        
@@ -83,8 +85,12 @@
 
      $(document).ready(function(){
 
-         let bbox = {{ object.lake.envelope_ontario.json|safe }};
-         
+         {% if object.lake.envelope_ontario  %}
+         const bbox = {{ object.lake.envelope_ontario.json|safe }};
+         {% else %}
+         const bbox = '{"type":"Polygon","coordinates":[[[-92.094,41.381],[-92.094,49.016],[-76.059,49.016],[-76.059,41.381],[-92.094,41.381]]]}';
+         {%  endif %}
+
          function leafletBounds(bbox){
              let pt1 = bbox.coordinates[0][0]
              let pt2 = bbox.coordinates[0][2]

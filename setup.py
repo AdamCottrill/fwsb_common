@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name="fwsb-common",
-    version="2022.4.1",
+    version="2022.10.21",
     packages=find_packages(),
     include_package_data=True,
     license="MIT License",  # example license

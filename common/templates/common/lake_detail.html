@@ -42,9 +42,17 @@
                             <tr>
                                 <td><a href="{%  url 'common:management_unit_detail' slug=manunit.slug %}">{{ manunit.slug }}</a></td>
                                 <td>{{ object.lake_name|default:"---"  }}</td>                                                     
-                                <td>{{ manunit.label|default:"---"  }}</td>                         
+                                <td>{{ manunit.short_name}}</td>                         
                                 <td>{{ manunit.mu_type|default:"---"  }}</td>
-                                <td>{{ manunit.primary|default:"---"  }}</td>
+                                <td>
+
+                                    {%  if manunit.primary is True %}
+                                        Yes
+                                    {%  else %}
+                                        No
+                                    {% endif %}
+                                    
+                                </td>
                             </tr>                    
                         {% endfor %}                   
                     </tbody>                    
@@ -72,24 +80,29 @@
 
      $(document).ready(function(){
 
-         let bbox = {{ object.envelope_ontario.json|safe }};
-
-         let geometry = {{object.geom_ontario.json|safe }}
-             
-             function leafletBounds(bbox){
-                 let pt1 = bbox.coordinates[0][0]
-                 let pt2 = bbox.coordinates[0][2]
-                 return [
-                     [pt1[1], pt1[0]],
-                     [pt2[1], pt2[0]],                         
-                 ]
-             }
+         function leafletBounds(bbox){
+             let pt1 = bbox.coordinates[0][0]
+             let pt2 = bbox.coordinates[0][2]
+             return [
+                 [pt1[1], pt1[0]],
+                 [pt2[1], pt2[0]],                         
+             ]
+         }
          
+         {% if object.envelope_ontario  %}
+         const bbox = {{ object.envelope_ontario.json|safe }};
+         {% else %}
+         const bbox = '{"type":"Polygon","coordinates":[[[-92.094,41.381],[-92.094,49.016],[-76.059,49.016],[-76.059,41.381],[-92.094,41.381]]]}';
+         {%  endif %}
+                      
          let my_map = new L.map('main_map', {
              zoomSnap: 0.1
          }).fitBounds(leafletBounds(bbox));
 
-         L.geoJSON(geometry).addTo(my_map);
+         {% if object.geom_ontario  %}
+         const geometry = {{object.geom_ontario.json|safe }}
+             L.geoJSON(geometry).addTo(my_map);
+         {%  endif %}
          
          // add the OpenStreetMap tiles
          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

@@ -1,9 +1,10 @@
-from django.db.models import F, Q, Subquery
+from django.db.models import F, Q, Subquery, CharField, Value
+from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
-from .models import Grid5, Lake, LakeManagementUnitType, ManagementUnit, Species, Taxon
+from .models import Grid5, Lake, ManagementUnit, Species, Taxon
 
 
 def grouped(items, ncol):
@@ -108,15 +109,27 @@ class LakeDetail(DetailView):
     def get_context_data(self, **kwargs):
         """Add the list of management units for this lake to our context"""
         context = super().get_context_data(**kwargs)
-        context["management_units"] = ManagementUnit.objects.filter(
-             lake__abbrev=self.kwargs["abbrev"]
-            ).prefetch_related("lake_management_unit_type",
-                               "lake_management_unit_type__management_unit_type"
-            ).annotate(
+        mus = (
+            ManagementUnit.objects.filter(lake__abbrev=self.kwargs["abbrev"])
+            .prefetch_related(
+                "lake_management_unit_type",
+                "lake_management_unit_type__management_unit_type",
+            )
+            .annotate(
                 primary=F("lake_management_unit_type__primary"),
                 mu_type=F("lake_management_unit_type__management_unit_type__label"),
+                short_name=Concat(
+                    "lake_management_unit_type__management_unit_type__abbrev",
+                    Value(": "),
+                    "label",
+                    output_field=CharField(),
+                ),
+            )
+            .values("slug", "label", "primary", "mu_type", "short_name")
+        )
 
-        ).values("slug", "label", "primary", "mu_type")
+        context["management_units"] = mus
+
         return context
 
 
@@ -143,7 +156,7 @@ class Grid5Detail(DetailView):
         context = super().get_context_data(**kwargs)
         context["mus"] = ManagementUnit.objects.filter(
             grids__slug=self.kwargs["slug"]
-        ).prefetch_related("lake")
+        ).prefetch_related("lake", "lake_management_unit_type")
 
         return context
 
@@ -152,7 +165,14 @@ class ManagementUnitList(ListView):
 
     template_name = "common/management_unit_list.html"
     model = ManagementUnit
-    queryset = ManagementUnit.objects.prefetch_related("lake").all()
+
+    def get_queryset(self):
+        qs = ManagementUnit.objects.prefetch_related(
+            "lake",
+            "lake_management_unit_type",
+            "lake_management_unit_type__management_unit_type",
+        ).all()
+        return qs
 
 
 class ManagementUnitDetail(DetailView):

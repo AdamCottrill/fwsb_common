@@ -16,7 +16,7 @@ from ..models import (
     Taxon,
     BottomType,
     CoverType,
-    Vessel
+    Vessel,
 )
 
 
@@ -114,7 +114,7 @@ class SpeciesFactory(factory.django.DjangoModelFactory):
 
 class TaxonFactory(factory.django.DjangoModelFactory):
     """
-    A factory for Species objects.
+    A factory for Taxon objects.
     """
 
     class Meta:

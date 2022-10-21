@@ -229,6 +229,15 @@ class ManagementUnit(BaseModel):
 
         return slugify("_".join([lake, mu_type, self.label]))
 
+    def short_name(self):
+        """
+        returns the name of the managment unit including the lake it
+        is associated with, the management unit type and the label
+
+        """
+        mu_type = self.lake_management_unit_type.management_unit_type.abbrev
+        return ": ".join([mu_type.upper(), self.label])
+
     def name(self):
         """
         returns the name of the managment unit including the lake it
