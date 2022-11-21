@@ -59,7 +59,7 @@ class LookupAdminBase(admin.ModelAdmin):
             return redirect("..")
         form = CsvImportForm()
         payload = {"form": form, "model_name": self.model.__name__}
-        return render(request, "admin/csv_form.html", payload)
+        return render(request, "admin/lookup_csv_form.html", payload)
 
 
 @admin.register(BottomType)
